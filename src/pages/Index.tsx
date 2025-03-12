@@ -1,27 +1,13 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/ThemeProvider";
-import { TabsList, TabsTrigger, Tabs } from "@/components/ui/tabs";
 
 const Index = () => {
   const [text, setText] = useState('');
-  const [selectedModel, setSelectedModel] = useState('gemini-1.5-pro');
-  const { theme } = useTheme();
   
-  // Available Gemini models
-  const models = [
-    "gemini-1.5-pro",
-    "gemini-1.5-flash",
-    "gemini-1.5-flash-8b", 
-    "gemini-2.0-flash",
-    "gemini-2.0-flash-lite",
-    "text-embedding-004",
-  ];
-
   // This is a temporary implementation since we can't directly use the Python function
   // In a real implementation, this would be connected to a backend service
   const calculateTokens = (text: string) => {
@@ -36,6 +22,8 @@ const Index = () => {
   const handleShowExample = () => {
     setText("Gemini language models use tokens to process text. Tokens are common sequences of characters found in text. These models learn to predict the next token in a sequence, enabling them to understand and generate human-like text.");
   };
+
+  const { theme } = useTheme();
 
   return (
     <div className={`min-h-screen ${theme === 'dark' ? 'bg-gray-950' : 'bg-gray-50'} p-6`}>
@@ -63,21 +51,6 @@ const Index = () => {
         </div>
 
         <div>
-          <Tabs defaultValue={selectedModel} className="mb-4 max-w-full overflow-x-auto">
-            <TabsList className="h-auto flex-wrap">
-              {models.map((model) => (
-                <TabsTrigger 
-                  key={model}
-                  value={model}
-                  onClick={() => setSelectedModel(model)}
-                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-                >
-                  {model}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
-
           <Card className={`p-0 overflow-hidden ${theme === 'dark' ? 'bg-gray-900 border-gray-800' : 'bg-white'}`}>
             <Textarea
               placeholder="Enter some text"
@@ -122,6 +95,35 @@ const Index = () => {
 
         <div className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} text-center`}>
           Note: This is an approximation. For accurate counts, please use the official Gemini API.
+        </div>
+
+        <div className={`space-y-4 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} text-left text-sm`}>
+          <p className="font-medium">Understanding Gemini Token Counting:</p>
+          <p>
+            For Gemini models, token counting aligns closely with standard subword tokenization methods. While the "one token ~ 4 characters" rule of thumb for common English text often applies, precise token counts can vary based on language, content complexity, and the specific Gemini model used.
+          </p>
+          
+          <div className="space-y-2">
+            <p className="font-medium">To accurately determine token counts for Gemini:</p>
+            
+            <ul className="list-disc pl-6 space-y-2">
+              <li>
+                <span className="font-medium">Google AI Studio and Vertex AI API:</span> When using Google AI Studio or the Vertex AI API, the response from the API will provide you with the token count for both the prompt and the generated response. This is the most reliable method.
+              </li>
+              <li>
+                <span className="font-medium">Google AI Python SDK:</span> The Google AI Python SDK provides tools to directly interact with Gemini models, and the API responses will include token counts.
+              </li>
+            </ul>
+          </div>
+
+          <div className="space-y-2">
+            <p className="font-medium">Considerations:</p>
+            <ul className="list-disc pl-6 space-y-2">
+              <li>Code, non-English languages, and complex formatting may result in different token counts.</li>
+              <li>The tokenization process can evolve with model updates. Therefore, relying on API-provided token counts is recommended for accurate usage.</li>
+              <li>Currently, there is no publicly available, separate, official python or javascript tokenization library, specifically for Gemini models, as is the case with tiktoken for other LLMs. Rely on the API response to provide the token count.</li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
