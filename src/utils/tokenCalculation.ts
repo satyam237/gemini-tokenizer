@@ -22,12 +22,14 @@ export const calculateTokens = async (textToCount: string, apiKey: string): Prom
     });
 
     const data = await response.json();
+    console.log("API Response:", data);
     
     if (data.error) {
       throw new Error(data.error.message || "Failed to count tokens");
     }
     
     return data.totalTokenCount || 0;
+    
   } catch (error) {
     throw error;
   }
