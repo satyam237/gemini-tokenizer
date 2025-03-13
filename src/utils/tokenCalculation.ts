@@ -30,7 +30,12 @@ export const calculateTokens = async (textToCount: string, apiKey: string): Prom
       throw new Error(data.error.message || "Failed to count tokens");
     }
     
-    // Fix: Use `totalTokens` instead of `totalTokenCount`
+    // Make sure we're accessing the correct property
+    if (typeof data.totalTokens !== 'number') {
+      console.error("Unexpected response format:", data);
+      throw new Error("Unexpected response format from Gemini API");
+    }
+    
     return data.totalTokens || 0;
     
   } catch (error) {

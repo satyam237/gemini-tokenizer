@@ -26,7 +26,8 @@ export const TokenCountDisplay = ({
             {isLoading ? (
               <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>Calculating...</span>
             ) : (
-              tokenCount || 0
+              // Ensure tokenCount is a number
+              typeof tokenCount === 'number' ? tokenCount : 0
             )}
           </div>
         </div>

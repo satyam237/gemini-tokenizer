@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useTheme } from "@/components/ThemeProvider";
 import { toast } from "@/components/ui/use-toast";
@@ -42,7 +43,10 @@ const Index: React.FC = () => {
             console.log("handleTokenCalculation: Calling calculateTokens with text length:", textToCount.length);
             const count = await calculateTokens(textToCount, storedApiKey);
             console.log("handleTokenCalculation: API returned token count:", count);
-            setTokenCount(count);
+            
+            // Ensure count is a number - convert to number if it's a string
+            const numericCount = typeof count === 'string' ? parseInt(count, 10) : count;
+            setTokenCount(isNaN(numericCount) ? 0 : numericCount);
         } catch (error: any) { // Type 'any' for error as it can be different types.
             console.error('Error counting tokens:', error);
             toast({
