@@ -39,11 +39,10 @@ const Index: React.FC = () => {
 
         setIsLoading(true);
         try {
-            console.log("handleTokenCalculation: Calling calculateTokens with text:", textToCount);
+            console.log("handleTokenCalculation: Calling calculateTokens with text length:", textToCount.length);
             const count = await calculateTokens(textToCount, storedApiKey);
             console.log("handleTokenCalculation: API returned token count:", count);
             setTokenCount(count);
-            console.log("handleTokenCalculation: tokenCount state updated to:", count);
         } catch (error: any) { // Type 'any' for error as it can be different types.
             console.error('Error counting tokens:', error);
             toast({
@@ -78,7 +77,9 @@ const Index: React.FC = () => {
     const handleTextChange = (newText: string): void => {
         setText(newText);
         if (!isKeyValid) {
-            setTokenCount(estimateTokens(newText));
+            const estimate = estimateTokens(newText);
+            console.log("Estimated tokens:", estimate);
+            setTokenCount(estimate);
         }
     };
 
@@ -112,7 +113,7 @@ const Index: React.FC = () => {
             <div className="max-w-4xl mx-auto space-y-8">
                 <div className="space-y-2">
                     <h1 className={`text-3xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                        Gemini Tokenizer
+                        Gemini Tokenizer (2.0 Flash)
                     </h1>
                     <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                         Learn about language model tokenization

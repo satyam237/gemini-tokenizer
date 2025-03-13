@@ -3,6 +3,8 @@ export const calculateTokens = async (textToCount: string, apiKey: string): Prom
   if (!textToCount || !apiKey) return 0;
   
   try {
+    console.log("Calling Gemini API with text:", textToCount.substring(0, 50) + (textToCount.length > 50 ? "..." : ""));
+    
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:countTokens?key=${apiKey}`, {
       method: 'POST',
       headers: {
@@ -31,6 +33,7 @@ export const calculateTokens = async (textToCount: string, apiKey: string): Prom
     return data.totalTokenCount || 0;
     
   } catch (error) {
+    console.error("Error in calculateTokens:", error);
     throw error;
   }
 };
