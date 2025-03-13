@@ -20,10 +20,33 @@ const Index: React.FC = () => {
     useEffect(() => {
         const savedApiKey = localStorage.getItem('geminiApiKey');
         if (savedApiKey) {
-            setStoredApiKey(savedApiKey);
-            setIsKeyValid(true);
+            // Verify the saved API key on page load
+            verifyExistingApiKey(savedApiKey);
         }
     }, []);
+
+    const verifyExistingApiKey = async (key: string) => {
+        setIsLoading(true);
+        try {
+            // Use a simple test string to verify the API key works
+            const testText = "Verify saved key";
+            await calculateTokens(testText, key);
+            
+            // If no error was thrown, the API key is valid
+            setStoredApiKey(key);
+            setIsKeyValid(true);
+        } catch (error) {
+            console.error('Error verifying saved API key:', error);
+            localStorage.removeItem('geminiApiKey');
+            toast({
+                title: "Invalid Saved API Key",
+                description: "Your previously saved API key is no longer valid. Please enter a new one.",
+                variant: "destructive"
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     useEffect(() => {
         if (!text || !isKeyValid) return;

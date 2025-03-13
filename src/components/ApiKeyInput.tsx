@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
 import { useTheme } from "@/components/ThemeProvider";
+import { calculateTokens } from "@/utils/tokenCalculation";
 
 interface ApiKeyInputProps {
   onApiKeySet: (key: string) => void;
@@ -12,25 +13,52 @@ interface ApiKeyInputProps {
 
 export const ApiKeyInput = ({ onApiKeySet }: ApiKeyInputProps) => {
   const [apiKey, setApiKey] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
   const { theme } = useTheme();
 
-  const handleSetApiKey = () => {
-    if (!apiKey.trim()) {
+  const verifyApiKey = async (key: string) => {
+    if (!key.trim()) {
       toast({
         title: "API Key Required",
         description: "Please enter your Gemini API key",
         variant: "destructive"
       });
-      return;
+      return false;
     }
-    
-    localStorage.setItem('geminiApiKey', apiKey);
-    onApiKeySet(apiKey);
-    setApiKey('');
-    toast({
-      title: "API Key Saved",
-      description: "Your API key has been saved"
-    });
+
+    setIsVerifying(true);
+
+    try {
+      // Use a simple test string to verify the API key works
+      const testText = "Test verification";
+      await calculateTokens(testText, key);
+      
+      // If no error was thrown, the API key is valid
+      localStorage.setItem('geminiApiKey', key);
+      toast({
+        title: "API Key Verified",
+        description: "Your API key has been verified and saved"
+      });
+      setIsVerifying(false);
+      return true;
+    } catch (error) {
+      console.error('Error verifying API key:', error);
+      setIsVerifying(false);
+      toast({
+        title: "Invalid API Key",
+        description: "The API key could not be verified. Please check and try again.",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
+
+  const handleVerifyAndSave = async () => {
+    const isValid = await verifyApiKey(apiKey);
+    if (isValid) {
+      onApiKeySet(apiKey);
+      setApiKey('');
+    }
   };
 
   return (
@@ -49,9 +77,13 @@ export const ApiKeyInput = ({ onApiKeySet }: ApiKeyInputProps) => {
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
             className={theme === 'dark' ? 'bg-gray-800 border-gray-700' : ''}
+            disabled={isVerifying}
           />
-          <Button onClick={handleSetApiKey}>
-            Save Key
+          <Button 
+            onClick={handleVerifyAndSave} 
+            disabled={isVerifying || !apiKey.trim()}
+          >
+            {isVerifying ? 'Verifying...' : 'Verify Key'}
           </Button>
         </div>
         <p className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>

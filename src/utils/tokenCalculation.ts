@@ -26,8 +26,11 @@ export const calculateTokens = async (textToCount: string, apiKey: string): Prom
     const data = await response.json();
     console.log("API Response:", data);
     
+    // Check for API errors
     if (data.error) {
-      throw new Error(data.error.message || "Failed to count tokens");
+      const errorMessage = data.error.message || "Unknown API error";
+      console.error("API returned an error:", errorMessage);
+      throw new Error(errorMessage);
     }
     
     // Make sure we're accessing the correct property
