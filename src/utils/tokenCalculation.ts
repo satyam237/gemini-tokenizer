@@ -30,7 +30,8 @@ export const calculateTokens = async (textToCount: string, apiKey: string): Prom
       throw new Error(data.error.message || "Failed to count tokens");
     }
     
-    return data.totalTokenCount || 0;
+    // Fix: Use `totalTokens` instead of `totalTokenCount`
+    return data.totalTokens || 0;
     
   } catch (error) {
     console.error("Error in calculateTokens:", error);
