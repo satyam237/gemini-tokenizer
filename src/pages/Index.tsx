@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useTheme } from "@/components/ThemeProvider";
 import { toast } from "@/components/ui/use-toast";
@@ -7,8 +6,6 @@ import { TokenizerInput } from "@/components/TokenizerInput";
 import { TokenCountDisplay } from "@/components/TokenCountDisplay";
 import { TokenizationInfo } from "@/components/TokenizationInfo";
 import { calculateTokens, estimateTokens } from "@/utils/tokenCalculation";
-import { FaGithub, FaEnvelope } from "react-icons/fa";
-
 
 const Index: React.FC = () => {
     const [text, setText] = useState<string>('');
@@ -186,18 +183,6 @@ const Index: React.FC = () => {
 
                 <TokenizationInfo />
             </div>
-            <footer className="mt-10 text-center text-sm text-gray-500">
-                <p>Made by Satyam Jadhav | <a href="mailto:satyam2373@gmail.com" className="text-blue-500 hover:underline">satyam2373@gmail.com</a></p>
-                <div className="flex justify-center space-x-4 mt-2">
-                    <a href="https://github.com/satyam237" target="_blank" rel="noopener noreferrer">
-                        <FaGithub className="w-5 h-5 text-gray-600 hover:text-black" />
-                    </a>
-                    <a href="mailto:satyam2373@gmail.com">
-                        <FaEnvelope className="w-5 h-5 text-gray-600 hover:text-red-600" />
-                    </a>
-                </div>
-                <p className="mt-2">Made with <span className="font-bold">lovable.ai</span>. Feel free to contribute!</p>
-            </footer>
         </div>
     );
 };
