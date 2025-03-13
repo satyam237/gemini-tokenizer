@@ -7,6 +7,8 @@ import { TokenizerInput } from "@/components/TokenizerInput";
 import { TokenCountDisplay } from "@/components/TokenCountDisplay";
 import { TokenizationInfo } from "@/components/TokenizationInfo";
 import { calculateTokens, estimateTokens } from "@/utils/tokenCalculation";
+import { FaGithub, FaEnvelope } from "react-icons/fa";
+
 
 const Index: React.FC = () => {
     const [text, setText] = useState<string>('');
