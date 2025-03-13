@@ -117,7 +117,7 @@ const Index: React.FC = () => {
             <div className="max-w-4xl mx-auto space-y-8">
                 <div className="space-y-2">
                     <h1 className={`text-3xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                        Gemini Tokenizer (2.0 Flash)
+                        Gemini Tokenizer
                     </h1>
                     <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                         Learn about language model tokenization
@@ -132,7 +132,8 @@ const Index: React.FC = () => {
                     </p>
 
                     <p>
-                        You can use the tool below to understand how a piece of text might be tokenized by a language
+                        This tool uses the <span className="font-medium">Gemini 2.0 Flash</span> model to accurately count tokens.
+                        You can use it to understand how a piece of text might be tokenized by a language
                         model, and the total count of tokens in that piece of text.
                     </p>
                 </div>
