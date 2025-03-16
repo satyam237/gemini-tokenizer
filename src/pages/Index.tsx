@@ -7,6 +7,7 @@ import { TokenCountDisplay } from "@/components/TokenCountDisplay";
 import { TokenizationInfo } from "@/components/TokenizationInfo";
 import { calculateTokens, estimateTokens } from "@/utils/tokenCalculation";
 import { FaGithub, FaEnvelope } from "react-icons/fa";
+import { Helmet } from 'react-helmet';
 
 const Index: React.FC = () => {
     const [text, setText] = useState<string>('');
@@ -20,7 +21,6 @@ const Index: React.FC = () => {
     useEffect(() => {
         const savedApiKey = localStorage.getItem('geminiApiKey');
         if (savedApiKey) {
-            // Verify the saved API key on page load
             verifyExistingApiKey(savedApiKey);
         }
     }, []);
@@ -28,11 +28,8 @@ const Index: React.FC = () => {
     const verifyExistingApiKey = async (key: string) => {
         setIsLoading(true);
         try {
-            // Use a simple test string to verify the API key works
             const testText = "Verify saved key";
             await calculateTokens(testText, key);
-            
-            // If no error was thrown, the API key is valid
             setStoredApiKey(key);
             setIsKeyValid(true);
         } catch (error) {
@@ -67,10 +64,9 @@ const Index: React.FC = () => {
             const count = await calculateTokens(textToCount, storedApiKey);
             console.log("handleTokenCalculation: API returned token count:", count);
             
-            // Ensure count is a number - convert to number if it's a string
             const numericCount = typeof count === 'string' ? parseInt(count, 10) : count;
             setTokenCount(isNaN(numericCount) ? 0 : numericCount);
-        } catch (error: any) { // Type 'any' for error as it can be different types.
+        } catch (error: any) {
             console.error('Error counting tokens:', error);
             toast({
                 title: "API Error",
@@ -135,8 +131,34 @@ const Index: React.FC = () => {
         }
     };
 
+    const structuredData = {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Gemini Tokenizer",
+        "description": "An accurate token counter tool for Gemini AI models to help calculate token usage for prompts and responses.",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Any",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "author": {
+            "@type": "Person",
+            "name": "Satyam Jadhav",
+            "url": "https://github.com/satyam237"
+        }
+    };
+
     return (
         <div className={`min-h-screen ${theme === 'dark' ? 'bg-gray-950' : 'bg-gray-50'} p-6`}>
+            <Helmet>
+                <title>Gemini Tokenizer - Count Tokens for Gemini AI Models</title>
+                <meta name="description" content="An accurate token counter for Gemini AI models. Calculate token usage for your Gemini prompts and responses to optimize your AI applications." />
+                <script type="application/ld+json">
+                    {JSON.stringify(structuredData)}
+                </script>
+            </Helmet>
             <div className="max-w-4xl mx-auto space-y-8">
                 <div className="space-y-2">
                     <h1 className={`text-3xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
