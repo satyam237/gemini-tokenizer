@@ -6,13 +6,16 @@ import { Card } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
 import { useTheme } from "@/components/ThemeProvider";
 import { calculateTokens } from "@/utils/tokenCalculation";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, AlertTriangle } from "lucide-react";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 interface ApiKeyInputProps {
   onApiKeySet: (key: string) => void;
+  defaultKeyFailed?: boolean;
+  onRetryDefaultKey?: () => void;
 }
 
-export const ApiKeyInput = ({ onApiKeySet }: ApiKeyInputProps) => {
+export const ApiKeyInput = ({ onApiKeySet, defaultKeyFailed = false, onRetryDefaultKey }: ApiKeyInputProps) => {
   const [apiKey, setApiKey] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
@@ -67,9 +70,28 @@ export const ApiKeyInput = ({ onApiKeySet }: ApiKeyInputProps) => {
     setShowApiKey(!showApiKey);
   };
 
+  const handleRetryDefault = () => {
+    if (onRetryDefaultKey) {
+      onRetryDefaultKey();
+    }
+  };
+
   return (
     <Card className={`p-6 ${theme === 'dark' ? 'bg-gray-900 border-gray-800' : 'bg-white'}`}>
       <div className="space-y-4">
+        {defaultKeyFailed && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Default API Key Failed</AlertTitle>
+            <AlertDescription>
+              Our default API key is not working. Please provide your own Gemini API key or 
+              <Button variant="link" onClick={handleRetryDefault} className="px-1 h-auto">
+                try again
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+        
         <h3 className={`text-lg font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
           Enter your Gemini API Key
         </h3>

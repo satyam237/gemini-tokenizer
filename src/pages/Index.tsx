@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { useTheme } from "@/components/ThemeProvider";
-import { toast } from "@/components/ui/use-toast";
 import { ApiKeyInput } from "@/components/ApiKeyInput";
 import { TokenizerInput } from "@/components/TokenizerInput";
 import { TokenCountDisplay } from "@/components/TokenCountDisplay";
@@ -20,9 +19,11 @@ const Index: React.FC = () => {
         storedApiKey,
         isKeyValid,
         isLoading,
+        usingDefaultKey,
         setIsLoading,
         handleSetApiKey,
-        handleResetApiKey
+        handleResetApiKey,
+        verifyDefaultApiKey
     } = useApiKeyManagement();
 
     const {
@@ -34,14 +35,25 @@ const Index: React.FC = () => {
         handleTokenCalculation
     } = useTokenCalculation(storedApiKey, isKeyValid, setIsLoading);
 
-    // Handle API errors that might affect key validity
+    const [defaultKeyFailed, setDefaultKeyFailed] = React.useState(false);
+
+    // If API calls fail with the default key, show the API key input
     const handleApiError = (error: any) => {
-        if (error instanceof Error &&
+        if (usingDefaultKey) {
+            localStorage.removeItem('geminiApiKey');
+            handleResetApiKey();
+            setDefaultKeyFailed(true);
+        } else if (error instanceof Error &&
             (error.message.includes('INVALID_ARGUMENT') ||
                 error.message.includes('PERMISSION_DENIED'))) {
             localStorage.removeItem('geminiApiKey');
             handleResetApiKey();
         }
+    };
+
+    const retryDefaultKey = () => {
+        setDefaultKeyFailed(false);
+        verifyDefaultApiKey();
     };
 
     const structuredData = {
@@ -77,7 +89,11 @@ const Index: React.FC = () => {
                 <Introduction />
 
                 {!isKeyValid ? (
-                    <ApiKeyInput onApiKeySet={handleSetApiKey} />
+                    <ApiKeyInput 
+                        onApiKeySet={handleSetApiKey} 
+                        defaultKeyFailed={defaultKeyFailed}
+                        onRetryDefaultKey={retryDefaultKey}
+                    />
                 ) : (
                     <>
                         <TokenizerInput

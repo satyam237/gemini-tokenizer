@@ -11,11 +11,21 @@ export function useTokenCalculation(apiKey: string, isKeyValid: boolean, setIsLo
         if (!text || !isKeyValid) return;
 
         const timer = setTimeout(() => {
-            handleTokenCalculation(text);
+            handleTokenCalculation(text).catch(error => {
+                console.error("Token calculation failed:", error);
+                // Fall back to estimation when API fails
+                const estimate = estimateTokens(text);
+                setTokenCount(estimate);
+                toast({
+                    title: "Using Estimated Count",
+                    description: "API call failed. Showing an estimated token count instead.",
+                    variant: "destructive"
+                });
+            });
         }, 500);
 
         return () => clearTimeout(timer);
-    }, [text, isKeyValid]);
+    }, [text, isKeyValid, apiKey]);
 
     const handleTokenCalculation = async (textToCount: string): Promise<void> => {
         if (!textToCount) return;
@@ -36,7 +46,9 @@ export function useTokenCalculation(apiKey: string, isKeyValid: boolean, setIsLo
                 variant: "destructive"
             });
 
-            setTokenCount(0);
+            // Use fallback estimation
+            const estimate = estimateTokens(textToCount);
+            setTokenCount(estimate);
             throw error; // Rethrow to handle API key validation in the parent component
         } finally {
             setIsLoading(false);
