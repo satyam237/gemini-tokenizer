@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { calculateTokens } from "@/utils/tokenCalculation";
 import { toast } from "@/components/ui/use-toast";
 
-const DEFAULT_API_KEY = 'AIzaSyDtpsYDIKyoODNL0U9wHgxf69PWvI12hXc';
+const DEFAULT_API_KEY = import.meta.env.VITE_DEFAULT_API_KEY;
 
 export function useApiKeyManagement() {
     const [storedApiKey, setStoredApiKey] = useState<string>('');
