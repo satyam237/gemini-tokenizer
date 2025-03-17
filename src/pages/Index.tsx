@@ -1,81 +1,128 @@
 
-import React, { useState, useEffect } from 'react';
-import { Card } from "@/components/ui/card";
+import React from 'react';
+import { useTheme } from "@/components/ThemeProvider";
+import { ApiKeyInput } from "@/components/ApiKeyInput";
 import { TokenizerInput } from "@/components/TokenizerInput";
 import { TokenCountDisplay } from "@/components/TokenCountDisplay";
-import { ApiKeyInput } from "@/components/ApiKeyInput";
+import { TokenizationInfo } from "@/components/TokenizationInfo";
+import { Introduction } from "@/components/Introduction";
+import { PageHeader } from "@/components/PageHeader";
+import { PageFooter } from "@/components/PageFooter";
 import { useApiKeyManagement } from "@/hooks/useApiKeyManagement";
 import { useTokenCalculation } from "@/hooks/useTokenCalculation";
-import { Introduction } from "@/components/Introduction";
-import { TokenizationInfo } from "@/components/TokenizationInfo";
-import { PageHeader } from "@/components/PageHeader";
+import { Helmet } from 'react-helmet';
 
-export default function Index() {
-  const {
-    storedApiKey,
-    isKeyValid,
-    isLoading,
-    usingDefaultKey,
-    setIsLoading,
-    handleSetApiKey,
-    handleResetApiKey,
-    verifyDefaultApiKey
-  } = useApiKeyManagement();
+const Index: React.FC = () => {
+    const { theme } = useTheme();
+    
+    const {
+        storedApiKey,
+        isKeyValid,
+        isLoading,
+        usingDefaultKey,
+        setIsLoading,
+        handleSetApiKey,
+        handleResetApiKey,
+        verifyDefaultApiKey
+    } = useApiKeyManagement();
 
-  const [showApiKeyInput, setShowApiKeyInput] = useState(false);
-  
-  const {
-    text,
-    tokenCount,
-    handleTextChange,
-    handleClear,
-    handleShowExample
-  } = useTokenCalculation(storedApiKey, isKeyValid, setIsLoading);
+    const {
+        text,
+        tokenCount,
+        handleTextChange,
+        handleClear,
+        handleShowExample,
+        handleTokenCalculation
+    } = useTokenCalculation(storedApiKey, isKeyValid, setIsLoading);
 
-  // Effect to manage API key input visibility
-  useEffect(() => {
-    // Only show API key input if verification has failed
-    if (!isKeyValid && !isLoading) {
-      setShowApiKeyInput(true);
-    } else {
-      setShowApiKeyInput(false);
-    }
-  }, [isKeyValid, isLoading]);
+    const [defaultKeyFailed, setDefaultKeyFailed] = React.useState(false);
 
-  return (
-    <div className="container max-w-3xl py-8 px-4 mx-auto">
-      <PageHeader />
-      
-      <div className="mt-6">
-        <Introduction />
-      </div>
-      
-      {showApiKeyInput ? (
-        <ApiKeyInput 
-          onApiKeySet={handleSetApiKey} 
-          defaultKeyFailed={true}
-          onRetryDefaultKey={() => verifyDefaultApiKey(true)}
-        />
-      ) : (
-        <>
-          <TokenizerInput
-            text={text}
-            onTextChange={handleTextChange}
-            onClear={handleClear}
-            onShowExample={handleShowExample}
-            onResetApiKey={handleResetApiKey}
-          />
-          
-          <TokenCountDisplay
-            tokenCount={tokenCount}
-            characterCount={text.length}
-            isLoading={isLoading}
-            isKeyValid={isKeyValid}
-          />
+    // Security-focused error handler
+    const handleApiError = (error: any) => {
+        // Check if this is a key validation error
+        if (usingDefaultKey && 
+            (error instanceof Error && 
+             (error.message.includes('API key not authorized') || 
+              error.message.includes('PERMISSION_DENIED') ||
+              error.message.includes('INVALID_ARGUMENT')))) {
+            localStorage.removeItem('geminiApiKey');
+            handleResetApiKey();
+            setDefaultKeyFailed(true);
+        }
+    };
 
-          <TokenizationInfo />
-        </>
-      )}
-    </div>
-  );
-}
+    const retryDefaultKey = async () => {
+        setDefaultKeyFailed(false);
+        const success = await verifyDefaultApiKey(true);
+        if (!success) {
+            setDefaultKeyFailed(true);
+        }
+    };
+
+    const structuredData = {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Gemini Tokenizer",
+        "description": "An accurate token counter tool for Gemini AI models to help calculate token usage for prompts and responses.",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Any",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "author": {
+            "@type": "Person",
+            "name": "Satyam Jadhav",
+            "url": "https://github.com/satyam237"
+        }
+    };
+
+    return (
+        <div className={`min-h-screen ${theme === 'dark' ? 'bg-gray-950' : 'bg-gray-50'} p-6`}>
+            <Helmet>
+                <title>Gemini Tokenizer - Count Tokens for Gemini AI Models</title>
+                <meta name="description" content="An accurate token counter for Gemini AI models. Calculate token usage for your Gemini prompts and responses to optimize your AI applications." />
+                <meta name="referrer" content="no-referrer" />
+                <meta httpEquiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://generativelanguage.googleapis.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;" />
+                <script type="application/ld+json">
+                    {JSON.stringify(structuredData)}
+                </script>
+            </Helmet>
+            <div className="max-w-4xl mx-auto space-y-8">
+                <PageHeader />
+                <Introduction />
+
+                {!isKeyValid ? (
+                    <ApiKeyInput 
+                        onApiKeySet={handleSetApiKey} 
+                        defaultKeyFailed={defaultKeyFailed}
+                        onRetryDefaultKey={retryDefaultKey}
+                    />
+                ) : (
+                    <>
+                        <TokenizerInput
+                            text={text}
+                            onTextChange={handleTextChange}
+                            onClear={handleClear}
+                            onShowExample={handleShowExample}
+                            onResetApiKey={handleResetApiKey}
+                        />
+
+                        <TokenCountDisplay
+                            tokenCount={tokenCount}
+                            characterCount={text.length}
+                            isLoading={isLoading}
+                            isKeyValid={isKeyValid}
+                        />
+                    </>
+                )}
+
+                <TokenizationInfo />
+            </div>
+            <PageFooter />
+        </div>
+    );
+};
+
+export default Index;
