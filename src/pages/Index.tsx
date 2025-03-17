@@ -8,6 +8,7 @@ import { useApiKeyManagement } from "@/hooks/useApiKeyManagement";
 import { useTokenCalculation } from "@/hooks/useTokenCalculation";
 import { Introduction } from "@/components/Introduction";
 import { TokenizationInfo } from "@/components/TokenizationInfo";
+import { PageHeader } from "@/components/PageHeader";
 
 export default function Index() {
   const {
@@ -43,7 +44,11 @@ export default function Index() {
 
   return (
     <div className="container max-w-3xl py-8 px-4 mx-auto">
-      <Introduction />
+      <PageHeader />
+      
+      <div className="mt-6">
+        <Introduction />
+      </div>
       
       {showApiKeyInput ? (
         <ApiKeyInput 
