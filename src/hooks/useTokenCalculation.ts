@@ -7,6 +7,7 @@ export function useTokenCalculation(apiKey: string, isKeyValid: boolean, setIsLo
     const [text, setText] = useState<string>('');
     const [tokenCount, setTokenCount] = useState<number>(0);
     const [debounceTimer, setDebounceTimer] = useState<NodeJS.Timeout | null>(null);
+    const [apiError, setApiError] = useState<Error | null>(null);
 
     // Use memoized calculation function to prevent unnecessary renders
     const handleTokenCalculation = useCallback(async (textToCount: string): Promise<void> => {
@@ -20,8 +21,14 @@ export function useTokenCalculation(apiKey: string, isKeyValid: boolean, setIsLo
             const count = await calculateTokens(sanitizedText, apiKey);
             const numericCount = typeof count === 'string' ? parseInt(count, 10) : count;
             setTokenCount(isNaN(numericCount) ? 0 : numericCount);
+            
+            // Clear any previous errors
+            setApiError(null);
         } catch (error: any) {
             console.error('Error counting tokens:', error);
+            
+            // Store the error for potential handling by parent components
+            setApiError(error instanceof Error ? error : new Error(String(error)));
             
             // Only show toast for non-network errors to reduce noise
             if (error.message && !error.message.includes('network')) {
@@ -90,6 +97,7 @@ export function useTokenCalculation(apiKey: string, isKeyValid: boolean, setIsLo
     return {
         text,
         tokenCount,
+        apiError,
         handleTextChange,
         handleClear,
         handleShowExample,

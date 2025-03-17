@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTheme } from "@/components/ThemeProvider";
 import { ApiKeyInput } from "@/components/ApiKeyInput";
 import { TokenizerInput } from "@/components/TokenizerInput";
@@ -11,9 +11,11 @@ import { PageFooter } from "@/components/PageFooter";
 import { useApiKeyManagement } from "@/hooks/useApiKeyManagement";
 import { useTokenCalculation } from "@/hooks/useTokenCalculation";
 import { Helmet } from 'react-helmet';
+import { toast } from "@/components/ui/use-toast";
 
 const Index: React.FC = () => {
     const { theme } = useTheme();
+    const [showApiKeyInput, setShowApiKeyInput] = useState<boolean>(false);
     
     const {
         storedApiKey,
@@ -35,7 +37,26 @@ const Index: React.FC = () => {
         handleTokenCalculation
     } = useTokenCalculation(storedApiKey, isKeyValid, setIsLoading);
 
-    const [defaultKeyFailed, setDefaultKeyFailed] = React.useState(false);
+    const [defaultKeyFailed, setDefaultKeyFailed] = useState(false);
+
+    // Initial setup - verify default key in the background
+    useEffect(() => {
+        const verifyKey = async () => {
+            // Always try to use the default key first
+            const success = await verifyDefaultApiKey(false);
+            if (!success) {
+                setDefaultKeyFailed(true);
+                setShowApiKeyInput(true);
+                toast({
+                    title: "API Key Required",
+                    description: "Please provide your own Gemini API key to use the tokenizer",
+                    variant: "destructive"
+                });
+            }
+        };
+        
+        verifyKey();
+    }, []);
 
     // Security-focused error handler
     const handleApiError = (error: any) => {
@@ -48,6 +69,7 @@ const Index: React.FC = () => {
             localStorage.removeItem('geminiApiKey');
             handleResetApiKey();
             setDefaultKeyFailed(true);
+            setShowApiKeyInput(true);
         }
     };
 
@@ -56,7 +78,20 @@ const Index: React.FC = () => {
         const success = await verifyDefaultApiKey(true);
         if (!success) {
             setDefaultKeyFailed(true);
+            setShowApiKeyInput(true);
+        } else {
+            setShowApiKeyInput(false);
         }
+    };
+
+    const handleApiKeySubmit = (key: string) => {
+        handleSetApiKey(key);
+        setShowApiKeyInput(false);
+    };
+
+    const handleKeyResetRequest = () => {
+        handleResetApiKey();
+        setShowApiKeyInput(true);
     };
 
     const structuredData = {
@@ -93,9 +128,9 @@ const Index: React.FC = () => {
                 <PageHeader />
                 <Introduction />
 
-                {!isKeyValid ? (
+                {showApiKeyInput ? (
                     <ApiKeyInput 
-                        onApiKeySet={handleSetApiKey} 
+                        onApiKeySet={handleApiKeySubmit} 
                         defaultKeyFailed={defaultKeyFailed}
                         onRetryDefaultKey={retryDefaultKey}
                     />
@@ -106,7 +141,7 @@ const Index: React.FC = () => {
                             onTextChange={handleTextChange}
                             onClear={handleClear}
                             onShowExample={handleShowExample}
-                            onResetApiKey={handleResetApiKey}
+                            onResetApiKey={handleKeyResetRequest}
                         />
 
                         <TokenCountDisplay

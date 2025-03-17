@@ -11,19 +11,15 @@ export function useApiKeyManagement() {
     const [isKeyValid, setIsKeyValid] = useState<boolean>(false);
     const [usingDefaultKey, setUsingDefaultKey] = useState<boolean>(false);
 
-    // Prioritize default key verification immediately on load
+    // Check for a saved API key on component mount
     useEffect(() => {
-        const initializeApiKey = async () => {
-            const savedApiKey = localStorage.getItem('geminiApiKey');
-            if (savedApiKey) {
-                await verifyExistingApiKey(savedApiKey);
-            } else {
-                // Silently try default key with no notifications on success
-                await verifyDefaultApiKey(false);
-            }
-        };
-        
-        initializeApiKey();
+        const savedApiKey = localStorage.getItem('geminiApiKey');
+        if (savedApiKey) {
+            // Set the key but don't verify yet, to avoid showing API key input
+            setStoredApiKey(savedApiKey);
+            setIsKeyValid(true);
+            setUsingDefaultKey(savedApiKey === DEFAULT_API_KEY);
+        }
     }, []);
 
     const verifyDefaultApiKey = async (showSuccessToast = false) => {
@@ -46,11 +42,7 @@ export function useApiKeyManagement() {
             return true;
         } catch (error) {
             console.error('Default API key not working:', error);
-            toast({
-                title: "API Key Required",
-                description: "Please provide your own Gemini API key",
-                variant: "destructive"
-            });
+            setIsKeyValid(false);
             return false;
         } finally {
             setIsLoading(false);
@@ -73,9 +65,8 @@ export function useApiKeyManagement() {
             return true;
         } catch (error) {
             console.error('Error verifying saved API key:', error);
-            localStorage.removeItem('geminiApiKey');
-            // Silently try default key as fallback
-            return await verifyDefaultApiKey(false);
+            setIsKeyValid(false);
+            return false;
         } finally {
             setIsLoading(false);
         }
@@ -111,6 +102,7 @@ export function useApiKeyManagement() {
         setIsLoading,
         handleSetApiKey,
         handleResetApiKey,
-        verifyDefaultApiKey
+        verifyDefaultApiKey,
+        verifyExistingApiKey
     };
 }
