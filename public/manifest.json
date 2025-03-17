@@ -1,0 +1,19 @@
+
+{
+  "name": "Gemini Tokenizer - Token Counter for Gemini AI Models",
+  "short_name": "Gemini Tokenizer",
+  "description": "An accurate token counter for Gemini AI models. Calculate token usage for your Gemini prompts and responses to optimize API costs.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ],
+  "categories": ["developer tools", "utilities", "AI tools"],
+  "keywords": "gemini tokenizer, gemini token counter, token count, gemini AI, gemini text to tokens, count tokens for gemini, online gemini token counter, gemini api token calculator, how to count gemini tokens, gemini prompt token estimator"
+}
