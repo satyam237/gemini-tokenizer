@@ -2,4 +2,8 @@
 User-agent: *
 Allow: /
 
+# Allow all crawlers
+Disallow:
+
+# Sitemap location
 Sitemap: https://gemini-tokenizer.com/sitemap.xml

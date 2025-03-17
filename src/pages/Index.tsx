@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useTheme } from "@/components/ThemeProvider";
 import { ApiKeyInput } from "@/components/ApiKeyInput";
@@ -39,10 +38,8 @@ const Index: React.FC = () => {
 
     const [defaultKeyFailed, setDefaultKeyFailed] = useState(false);
 
-    // Initial setup - verify default key in the background
     useEffect(() => {
         const verifyKey = async () => {
-            // Always try to use the default key first
             const success = await verifyDefaultApiKey(false);
             if (!success) {
                 setDefaultKeyFailed(true);
@@ -58,9 +55,7 @@ const Index: React.FC = () => {
         verifyKey();
     }, []);
 
-    // Security-focused error handler
     const handleApiError = (error: any) => {
-        // Check if this is a key validation error
         if (usingDefaultKey && 
             (error instanceof Error && 
              (error.message.includes('API key not authorized') || 
@@ -106,18 +101,23 @@ const Index: React.FC = () => {
             "price": "0",
             "priceCurrency": "USD"
         },
+        "keywords": "gemini tokenizer, gemini token counter, gemini token count, gemini tokens, gemini AI, token calculator, AI tokens, gemini text to tokens, count tokens for gemini, gemini token usage, gemini API tokens",
         "author": {
             "@type": "Person",
             "name": "Satyam Jadhav",
             "url": "https://github.com/satyam237"
-        }
+        },
+        "url": "https://gemini-tokenizer.com/",
+        "datePublished": "2023-10-01",
+        "dateModified": "2024-07-20"
     };
 
     return (
         <div className={`min-h-screen ${theme === 'dark' ? 'bg-gray-950' : 'bg-gray-50'} p-6`}>
             <Helmet>
-                <title>Gemini Tokenizer - Count Tokens for Gemini AI Models</title>
-                <meta name="description" content="An accurate token counter for Gemini AI models. Calculate token usage for your Gemini prompts and responses to optimize your AI applications." />
+                <title>Gemini Tokenizer - Accurate Token Counter for Gemini AI Models</title>
+                <meta name="description" content="Free online tool to accurately count tokens for Gemini AI models. Calculate token usage for your Gemini prompts and responses to optimize your AI applications and API costs." />
+                <meta name="keywords" content="gemini tokenizer, gemini token counter, gemini token count, gemini tokens, gemini AI, token calculator, AI tokens, gemini text to tokens, count tokens for gemini, gemini token usage, gemini API tokens" />
                 <meta name="referrer" content="no-referrer" />
                 <meta httpEquiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://generativelanguage.googleapis.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;" />
                 <script type="application/ld+json">

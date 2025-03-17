@@ -11,7 +11,7 @@ export const PageHeader: React.FC = () => {
                 Gemini Tokenizer
             </h1>
             <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                Learn about language model tokenization
+                Accurate token counter for Gemini AI models | Calculate tokens for your prompts
             </p>
         </div>
     );

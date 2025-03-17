@@ -14,9 +14,9 @@ export const Introduction: React.FC = () => {
             </p>
 
             <p>
-                This tool uses the <span className="font-medium">Gemini 2.0 Flash</span> model to accurately count tokens.
-                You can use it to understand how a piece of text might be tokenized by a language
-                model, and the total count of tokens in that piece of text.
+                This <span className="font-medium">Gemini token counter</span> uses the <span className="font-medium">Gemini 2.0 Flash</span> model to accurately count tokens.
+                You can use it to understand how a piece of text might be tokenized by Gemini AI models, and the total count of tokens in that text.
+                Optimize your API costs by knowing exactly how many tokens your prompts and responses will use.
             </p>
         </div>
     );
