@@ -1,50 +1,36 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { calculateTokens, estimateTokens } from "@/utils/tokenCalculation";
 import { toast } from "@/components/ui/use-toast";
 
 export function useTokenCalculation(apiKey: string, isKeyValid: boolean, setIsLoading: (loading: boolean) => void) {
     const [text, setText] = useState<string>('');
     const [tokenCount, setTokenCount] = useState<number>(0);
+    const [debounceTimer, setDebounceTimer] = useState<NodeJS.Timeout | null>(null);
 
-    useEffect(() => {
-        if (!text || !isKeyValid) return;
-
-        const timer = setTimeout(() => {
-            handleTokenCalculation(text).catch(error => {
-                console.error("Token calculation failed:", error);
-                // Fall back to estimation when API fails
-                const estimate = estimateTokens(text);
-                setTokenCount(estimate);
-                toast({
-                    title: "Using Estimated Count",
-                    description: "API call failed. Showing an estimated token count instead.",
-                    variant: "destructive"
-                });
-            });
-        }, 500);
-
-        return () => clearTimeout(timer);
-    }, [text, isKeyValid, apiKey]);
-
-    const handleTokenCalculation = async (textToCount: string): Promise<void> => {
-        if (!textToCount) return;
+    // Use memoized calculation function to prevent unnecessary renders
+    const handleTokenCalculation = useCallback(async (textToCount: string): Promise<void> => {
+        if (!textToCount || !apiKey) return;
 
         setIsLoading(true);
         try {
-            console.log("handleTokenCalculation: Calling calculateTokens with text length:", textToCount.length);
-            const count = await calculateTokens(textToCount, apiKey);
-            console.log("handleTokenCalculation: API returned token count:", count);
+            // Security: Validate input before sending to API
+            const sanitizedText = textToCount.slice(0, 100000); // Reasonable limit
             
+            const count = await calculateTokens(sanitizedText, apiKey);
             const numericCount = typeof count === 'string' ? parseInt(count, 10) : count;
             setTokenCount(isNaN(numericCount) ? 0 : numericCount);
         } catch (error: any) {
             console.error('Error counting tokens:', error);
-            toast({
-                title: "API Error",
-                description: error instanceof Error ? error.message : "Failed to connect to the Gemini API",
-                variant: "destructive"
-            });
+            
+            // Only show toast for non-network errors to reduce noise
+            if (error.message && !error.message.includes('network')) {
+                toast({
+                    title: "API Error",
+                    description: error instanceof Error ? error.message : "Failed to connect to the Gemini API",
+                    variant: "destructive"
+                });
+            }
 
             // Use fallback estimation
             const estimate = estimateTokens(textToCount);
@@ -53,13 +39,36 @@ export function useTokenCalculation(apiKey: string, isKeyValid: boolean, setIsLo
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [apiKey, setIsLoading]);
+
+    // Efficient debouncing mechanism
+    useEffect(() => {
+        if (!text || !isKeyValid || !apiKey) return;
+        
+        // Clear any existing timer
+        if (debounceTimer) clearTimeout(debounceTimer);
+        
+        // Set a new timer
+        const timer = setTimeout(() => {
+            handleTokenCalculation(text).catch(error => {
+                console.error("Token calculation failed:", error);
+                // Fall back to estimation when API fails
+                const estimate = estimateTokens(text);
+                setTokenCount(estimate);
+            });
+        }, 300); // Reduced debounce time for faster response
+        
+        setDebounceTimer(timer);
+        
+        return () => {
+            if (timer) clearTimeout(timer);
+        };
+    }, [text, isKeyValid, apiKey, handleTokenCalculation]);
 
     const handleTextChange = (newText: string): void => {
         setText(newText);
         if (!isKeyValid) {
             const estimate = estimateTokens(newText);
-            console.log("Estimated tokens:", estimate);
             setTokenCount(estimate);
         }
     };

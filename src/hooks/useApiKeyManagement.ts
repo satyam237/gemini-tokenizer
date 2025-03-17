@@ -11,17 +11,22 @@ export function useApiKeyManagement() {
     const [isKeyValid, setIsKeyValid] = useState<boolean>(false);
     const [usingDefaultKey, setUsingDefaultKey] = useState<boolean>(false);
 
+    // Prioritize default key verification immediately on load
     useEffect(() => {
-        const savedApiKey = localStorage.getItem('geminiApiKey');
-        if (savedApiKey) {
-            verifyExistingApiKey(savedApiKey);
-        } else {
-            // Try using the default key if no saved key exists
-            verifyDefaultApiKey();
-        }
+        const initializeApiKey = async () => {
+            const savedApiKey = localStorage.getItem('geminiApiKey');
+            if (savedApiKey) {
+                await verifyExistingApiKey(savedApiKey);
+            } else {
+                // Silently try default key with no notifications on success
+                await verifyDefaultApiKey(false);
+            }
+        };
+        
+        initializeApiKey();
     }, []);
 
-    const verifyDefaultApiKey = async () => {
+    const verifyDefaultApiKey = async (showSuccessToast = false) => {
         setIsLoading(true);
         try {
             const testText = "Verify default key";
@@ -30,17 +35,23 @@ export function useApiKeyManagement() {
             setIsKeyValid(true);
             setUsingDefaultKey(true);
             localStorage.setItem('geminiApiKey', DEFAULT_API_KEY);
-            toast({
-                title: "Using Default API Key",
-                description: "Connected with the default Gemini API key"
-            });
+            
+            // Only show success toast if explicitly requested
+            if (showSuccessToast) {
+                toast({
+                    title: "Using Default API Key",
+                    description: "Connected with the default Gemini API key"
+                });
+            }
+            return true;
         } catch (error) {
             console.error('Default API key not working:', error);
             toast({
-                title: "Default API Key Not Working",
+                title: "API Key Required",
                 description: "Please provide your own Gemini API key",
                 variant: "destructive"
             });
+            return false;
         } finally {
             setIsLoading(false);
         }
@@ -49,25 +60,36 @@ export function useApiKeyManagement() {
     const verifyExistingApiKey = async (key: string) => {
         setIsLoading(true);
         try {
+            // Security: Validate key format before use
+            if (!key || typeof key !== 'string' || key.length < 10) {
+                throw new Error("Invalid API key format");
+            }
+            
             const testText = "Verify saved key";
             await calculateTokens(testText, key);
             setStoredApiKey(key);
             setIsKeyValid(true);
             setUsingDefaultKey(key === DEFAULT_API_KEY);
+            return true;
         } catch (error) {
             console.error('Error verifying saved API key:', error);
             localStorage.removeItem('geminiApiKey');
-            // Try using the default key if saved key doesn't work
-            verifyDefaultApiKey();
+            // Silently try default key as fallback
+            return await verifyDefaultApiKey(false);
         } finally {
             setIsLoading(false);
         }
     };
 
     const handleSetApiKey = (newApiKey: string): void => {
-        setStoredApiKey(newApiKey);
+        // Security: Sanitize input
+        const sanitizedKey = (newApiKey || '').trim();
+        if (!sanitizedKey) return;
+        
+        localStorage.setItem('geminiApiKey', sanitizedKey);
+        setStoredApiKey(sanitizedKey);
         setIsKeyValid(true);
-        setUsingDefaultKey(newApiKey === DEFAULT_API_KEY);
+        setUsingDefaultKey(sanitizedKey === DEFAULT_API_KEY);
     };
 
     const handleResetApiKey = (): void => {

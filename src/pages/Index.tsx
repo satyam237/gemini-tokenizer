@@ -37,23 +37,26 @@ const Index: React.FC = () => {
 
     const [defaultKeyFailed, setDefaultKeyFailed] = React.useState(false);
 
-    // If API calls fail with the default key, show the API key input
+    // Security-focused error handler
     const handleApiError = (error: any) => {
-        if (usingDefaultKey) {
+        // Check if this is a key validation error
+        if (usingDefaultKey && 
+            (error instanceof Error && 
+             (error.message.includes('API key not authorized') || 
+              error.message.includes('PERMISSION_DENIED') ||
+              error.message.includes('INVALID_ARGUMENT')))) {
             localStorage.removeItem('geminiApiKey');
             handleResetApiKey();
             setDefaultKeyFailed(true);
-        } else if (error instanceof Error &&
-            (error.message.includes('INVALID_ARGUMENT') ||
-                error.message.includes('PERMISSION_DENIED'))) {
-            localStorage.removeItem('geminiApiKey');
-            handleResetApiKey();
         }
     };
 
-    const retryDefaultKey = () => {
+    const retryDefaultKey = async () => {
         setDefaultKeyFailed(false);
-        verifyDefaultApiKey();
+        const success = await verifyDefaultApiKey(true);
+        if (!success) {
+            setDefaultKeyFailed(true);
+        }
     };
 
     const structuredData = {
@@ -80,6 +83,8 @@ const Index: React.FC = () => {
             <Helmet>
                 <title>Gemini Tokenizer - Count Tokens for Gemini AI Models</title>
                 <meta name="description" content="An accurate token counter for Gemini AI models. Calculate token usage for your Gemini prompts and responses to optimize your AI applications." />
+                <meta name="referrer" content="no-referrer" />
+                <meta httpEquiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://generativelanguage.googleapis.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;" />
                 <script type="application/ld+json">
                     {JSON.stringify(structuredData)}
                 </script>
