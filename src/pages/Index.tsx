@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useTheme } from "@/components/ThemeProvider";
 import { ApiKeyInput } from "@/components/ApiKeyInput";
@@ -11,6 +12,7 @@ import { useApiKeyManagement } from "@/hooks/useApiKeyManagement";
 import { useTokenCalculation } from "@/hooks/useTokenCalculation";
 import { Helmet } from 'react-helmet';
 import { toast } from "@/components/ui/use-toast";
+import { estimateTokens } from "@/utils/tokenCalculation";
 
 const Index: React.FC = () => {
     const { theme } = useTheme();
@@ -24,7 +26,8 @@ const Index: React.FC = () => {
         setIsLoading,
         handleSetApiKey,
         handleResetApiKey,
-        verifyDefaultApiKey
+        verifyDefaultApiKey,
+        verifyExistingApiKey
     } = useApiKeyManagement();
 
     const {
@@ -37,9 +40,21 @@ const Index: React.FC = () => {
     } = useTokenCalculation(storedApiKey, isKeyValid, setIsLoading);
 
     const [defaultKeyFailed, setDefaultKeyFailed] = useState(false);
+    const [estimatedTokenCount, setEstimatedTokenCount] = useState(0);
 
+    // Try to verify API key on load
     useEffect(() => {
         const verifyKey = async () => {
+            // First check if there's a locally stored key
+            const savedKey = localStorage.getItem('geminiApiKey');
+            if (savedKey) {
+                const success = await verifyExistingApiKey(savedKey);
+                if (success) {
+                    return;
+                }
+            }
+            
+            // If no saved key or saved key failed, try the default key
             const success = await verifyDefaultApiKey(false);
             if (!success) {
                 setDefaultKeyFailed(true);
@@ -55,18 +70,12 @@ const Index: React.FC = () => {
         verifyKey();
     }, []);
 
-    const handleApiError = (error: any) => {
-        if (usingDefaultKey && 
-            (error instanceof Error && 
-             (error.message.includes('API key not authorized') || 
-              error.message.includes('PERMISSION_DENIED') ||
-              error.message.includes('INVALID_ARGUMENT')))) {
-            localStorage.removeItem('geminiApiKey');
-            handleResetApiKey();
-            setDefaultKeyFailed(true);
-            setShowApiKeyInput(true);
+    // Always provide estimated counts even when API is not available
+    useEffect(() => {
+        if (text && !isKeyValid) {
+            setEstimatedTokenCount(estimateTokens(text));
         }
-    };
+    }, [text, isKeyValid]);
 
     const retryDefaultKey = async () => {
         setDefaultKeyFailed(false);
@@ -89,6 +98,7 @@ const Index: React.FC = () => {
         setShowApiKeyInput(true);
     };
 
+    // Structured data for SEO
     const structuredData = {
         "@context": "https://schema.org",
         "@type": "WebApplication",
@@ -145,7 +155,7 @@ const Index: React.FC = () => {
                         />
 
                         <TokenCountDisplay
-                            tokenCount={tokenCount}
+                            tokenCount={isKeyValid ? tokenCount : estimatedTokenCount}
                             characterCount={text.length}
                             isLoading={isLoading}
                             isKeyValid={isKeyValid}

@@ -15,14 +15,21 @@ export function useApiKeyManagement() {
     useEffect(() => {
         const savedApiKey = localStorage.getItem('geminiApiKey');
         if (savedApiKey) {
-            // Set the key but don't verify yet, to avoid showing API key input
+            // Set the key but verify it
             setStoredApiKey(savedApiKey);
-            setIsKeyValid(true);
-            setUsingDefaultKey(savedApiKey === DEFAULT_API_KEY);
+            verifyExistingApiKey(savedApiKey);
+        } else if (DEFAULT_API_KEY) {
+            // If no saved key but default key exists, try that
+            verifyDefaultApiKey(false);
         }
     }, []);
 
     const verifyDefaultApiKey = async (showSuccessToast = false) => {
+        if (!DEFAULT_API_KEY) {
+            console.log("No default API key available");
+            return false;
+        }
+
         setIsLoading(true);
         try {
             const testText = "Verify default key";
@@ -50,10 +57,16 @@ export function useApiKeyManagement() {
     };
 
     const verifyExistingApiKey = async (key: string) => {
+        if (!key) {
+            console.error('No API key provided for verification');
+            setIsKeyValid(false);
+            return false;
+        }
+
         setIsLoading(true);
         try {
-            // Security: Validate key format before use
-            if (!key || typeof key !== 'string' || key.length < 10) {
+            // Security: Basic validation before use
+            if (typeof key !== 'string' || key.length < 10) {
                 throw new Error("Invalid API key format");
             }
             
@@ -65,6 +78,7 @@ export function useApiKeyManagement() {
             return true;
         } catch (error) {
             console.error('Error verifying saved API key:', error);
+            // Don't clear the stored key here, just mark it as invalid
             setIsKeyValid(false);
             return false;
         } finally {

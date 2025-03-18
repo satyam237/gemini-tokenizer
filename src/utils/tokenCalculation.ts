@@ -2,7 +2,8 @@
 // Security measures and optimization for token calculation
 
 export const calculateTokens = async (textToCount: string, apiKey: string): Promise<number> => {
-  if (!textToCount || !apiKey) return 0;
+  if (!textToCount) return 0;
+  if (!apiKey) throw new Error("API key is required for token calculation");
   
   try {
     // Security: Prevent API misuse by enforcing reasonable limits
@@ -12,12 +13,13 @@ export const calculateTokens = async (textToCount: string, apiKey: string): Prom
     
     // Performance optimization - don't log entire text
     const logText = textToCount.substring(0, 20) + (textToCount.length > 20 ? "..." : "");
-    console.log("Calling Gemini API for token calculation");
+    console.log(`Calling Gemini API for token calculation with ${apiKey.substring(0, 3)}...`);
     
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
     
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:countTokens?key=${apiKey}`, {
+    // Using the current Gemini API version - gemini-1.5-flash is the current model
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:countTokens?key=${apiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -41,6 +43,7 @@ export const calculateTokens = async (textToCount: string, apiKey: string): Prom
 
     if (!response.ok) {
       const errorText = await response.text();
+      console.error(`API response error: ${response.status} - ${errorText}`);
       throw new Error(`API error: ${response.status} - ${errorText}`);
     }
 
