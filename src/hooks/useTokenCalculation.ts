@@ -8,12 +8,26 @@ export function useTokenCalculation(apiKey: string, isKeyValid: boolean, setIsLo
     const [tokenCount, setTokenCount] = useState<number>(0);
     const [debounceTimer, setDebounceTimer] = useState<NodeJS.Timeout | null>(null);
     const [apiError, setApiError] = useState<Error | null>(null);
+    const [usingEstimate, setUsingEstimate] = useState<boolean>(false);
 
     // Use memoized calculation function to prevent unnecessary renders
     const handleTokenCalculation = useCallback(async (textToCount: string): Promise<void> => {
-        if (!textToCount || !apiKey) return;
+        if (!textToCount) {
+            setTokenCount(0);
+            return;
+        }
+        
+        if (!apiKey || !isKeyValid) {
+            // If no valid API key, use estimation instead
+            setUsingEstimate(true);
+            const estimate = estimateTokens(textToCount);
+            setTokenCount(estimate);
+            return;
+        }
 
         setIsLoading(true);
+        setUsingEstimate(false);
+        
         try {
             // Security: Validate input before sending to API
             const sanitizedText = textToCount.slice(0, 100000); // Reasonable limit
@@ -30,27 +44,34 @@ export function useTokenCalculation(apiKey: string, isKeyValid: boolean, setIsLo
             // Store the error for potential handling by parent components
             setApiError(error instanceof Error ? error : new Error(String(error)));
             
-            // Only show toast for non-network errors to reduce noise
-            if (error.message && !error.message.includes('network')) {
+            // Only show toast for specific API errors, not network issues
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            if (errorMessage.includes('API key not valid') || 
+                errorMessage.includes('PERMISSION_DENIED') ||
+                errorMessage.includes('API key expired')) {
+                
                 toast({
-                    title: "API Error",
-                    description: error instanceof Error ? error.message : "Failed to connect to the Gemini API",
+                    title: "API Key Error",
+                    description: "Your API key appears to be invalid or expired. Please check your key.",
                     variant: "destructive"
                 });
             }
 
             // Use fallback estimation
+            setUsingEstimate(true);
             const estimate = estimateTokens(textToCount);
             setTokenCount(estimate);
-            throw error; // Rethrow to handle API key validation in the parent component
         } finally {
             setIsLoading(false);
         }
-    }, [apiKey, setIsLoading]);
+    }, [apiKey, isKeyValid, setIsLoading]);
 
     // Efficient debouncing mechanism
     useEffect(() => {
-        if (!text || !isKeyValid || !apiKey) return;
+        if (!text) {
+            setTokenCount(0);
+            return;
+        }
         
         // Clear any existing timer
         if (debounceTimer) clearTimeout(debounceTimer);
@@ -60,6 +81,7 @@ export function useTokenCalculation(apiKey: string, isKeyValid: boolean, setIsLo
             handleTokenCalculation(text).catch(error => {
                 console.error("Token calculation failed:", error);
                 // Fall back to estimation when API fails
+                setUsingEstimate(true);
                 const estimate = estimateTokens(text);
                 setTokenCount(estimate);
             });
@@ -74,7 +96,8 @@ export function useTokenCalculation(apiKey: string, isKeyValid: boolean, setIsLo
 
     const handleTextChange = (newText: string): void => {
         setText(newText);
-        if (!isKeyValid) {
+        if (!isKeyValid || !apiKey) {
+            setUsingEstimate(true);
             const estimate = estimateTokens(newText);
             setTokenCount(estimate);
         }
@@ -89,7 +112,8 @@ export function useTokenCalculation(apiKey: string, isKeyValid: boolean, setIsLo
         const exampleText = "Gemini language models use tokens to process text. Tokens are common sequences of characters found in text. These models learn to predict the next token in a sequence, enabling them to understand and generate human-like text.";
         setText(exampleText);
 
-        if (!isKeyValid) {
+        if (!isKeyValid || !apiKey) {
+            setUsingEstimate(true);
             setTokenCount(estimateTokens(exampleText));
         }
     };
@@ -98,6 +122,7 @@ export function useTokenCalculation(apiKey: string, isKeyValid: boolean, setIsLo
         text,
         tokenCount,
         apiError,
+        usingEstimate,
         handleTextChange,
         handleClear,
         handleShowExample,

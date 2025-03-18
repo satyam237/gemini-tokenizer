@@ -17,7 +17,7 @@ export const calculateTokens = async (textToCount: string, apiKey: string): Prom
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
     
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:countTokens?key=${apiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:countTokens?key=${apiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -41,6 +41,7 @@ export const calculateTokens = async (textToCount: string, apiKey: string): Prom
 
     if (!response.ok) {
       const errorText = await response.text();
+      console.error(`API response error: ${response.status}`, errorText);
       throw new Error(`API error: ${response.status} - ${errorText}`);
     }
 

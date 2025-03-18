@@ -15,14 +15,27 @@ export function useApiKeyManagement() {
     useEffect(() => {
         const savedApiKey = localStorage.getItem('geminiApiKey');
         if (savedApiKey) {
-            // Set the key but don't verify yet, to avoid showing API key input
             setStoredApiKey(savedApiKey);
-            setIsKeyValid(true);
-            setUsingDefaultKey(savedApiKey === DEFAULT_API_KEY);
+            // Actually verify the saved key instead of assuming it's valid
+            verifyExistingApiKey(savedApiKey)
+                .then(isValid => {
+                    if (!isValid && DEFAULT_API_KEY) {
+                        // Try default key as fallback
+                        return verifyDefaultApiKey(false);
+                    }
+                    return isValid;
+                })
+                .catch(() => {
+                    // Silent catch, already handled in the verification functions
+                });
+        } else if (DEFAULT_API_KEY) {
+            verifyDefaultApiKey(false);
         }
     }, []);
 
     const verifyDefaultApiKey = async (showSuccessToast = false) => {
+        if (!DEFAULT_API_KEY) return false;
+        
         setIsLoading(true);
         try {
             const testText = "Verify default key";
@@ -43,6 +56,16 @@ export function useApiKeyManagement() {
         } catch (error) {
             console.error('Default API key not working:', error);
             setIsKeyValid(false);
+            setUsingDefaultKey(false);
+            
+            // If this was called directly (not as a fallback), show error
+            if (showSuccessToast) {
+                toast({
+                    title: "Default API Key Failed",
+                    description: "The default API key is not working. Please provide your own key.",
+                    variant: "destructive"
+                });
+            }
             return false;
         } finally {
             setIsLoading(false);
@@ -50,10 +73,12 @@ export function useApiKeyManagement() {
     };
 
     const verifyExistingApiKey = async (key: string) => {
+        if (!key) return false;
+        
         setIsLoading(true);
         try {
             // Security: Validate key format before use
-            if (!key || typeof key !== 'string' || key.length < 10) {
+            if (typeof key !== 'string' || key.length < 10) {
                 throw new Error("Invalid API key format");
             }
             
@@ -63,9 +88,18 @@ export function useApiKeyManagement() {
             setIsKeyValid(true);
             setUsingDefaultKey(key === DEFAULT_API_KEY);
             return true;
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error verifying saved API key:', error);
             setIsKeyValid(false);
+            
+            // Only show toast for non-connection errors to avoid noise
+            if (error.message && !error.message.includes('network')) {
+                toast({
+                    title: "API Key Invalid",
+                    description: "Your saved API key is no longer valid. Please provide a new one.",
+                    variant: "destructive"
+                });
+            }
             return false;
         } finally {
             setIsLoading(false);
