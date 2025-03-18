@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useTheme } from "@/components/ThemeProvider";
 import { ApiKeyInput } from "@/components/ApiKeyInput";
@@ -31,8 +30,6 @@ const Index: React.FC = () => {
     const {
         text,
         tokenCount,
-        apiError,
-        usingEstimate,
         handleTextChange,
         handleClear,
         handleShowExample,
@@ -58,21 +55,18 @@ const Index: React.FC = () => {
         verifyKey();
     }, []);
 
-    // Monitor for API errors that might indicate an invalid key
-    useEffect(() => {
-        if (apiError) {
-            const errorMessage = apiError.message || '';
-            if (usingDefaultKey && 
-                (errorMessage.includes('API key not authorized') || 
-                 errorMessage.includes('PERMISSION_DENIED') ||
-                 errorMessage.includes('INVALID_ARGUMENT'))) {
-                localStorage.removeItem('geminiApiKey');
-                handleResetApiKey();
-                setDefaultKeyFailed(true);
-                setShowApiKeyInput(true);
-            }
+    const handleApiError = (error: any) => {
+        if (usingDefaultKey && 
+            (error instanceof Error && 
+             (error.message.includes('API key not authorized') || 
+              error.message.includes('PERMISSION_DENIED') ||
+              error.message.includes('INVALID_ARGUMENT')))) {
+            localStorage.removeItem('geminiApiKey');
+            handleResetApiKey();
+            setDefaultKeyFailed(true);
+            setShowApiKeyInput(true);
         }
-    }, [apiError, usingDefaultKey]);
+    };
 
     const retryDefaultKey = async () => {
         setDefaultKeyFailed(false);
@@ -155,7 +149,6 @@ const Index: React.FC = () => {
                             characterCount={text.length}
                             isLoading={isLoading}
                             isKeyValid={isKeyValid}
-                            usingEstimate={usingEstimate}
                         />
                     </>
                 )}
