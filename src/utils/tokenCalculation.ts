@@ -18,8 +18,8 @@ export const calculateTokens = async (textToCount: string, apiKey: string): Prom
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
     
-    // Using the latest Gemini API version - gemini-flash-2.0 is the current model
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-2.0:countTokens?key=${apiKey}`, {
+    // Using the correct Gemini API model that supports countTokens
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.0-pro:countTokens?key=${apiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
