@@ -3,7 +3,8 @@ import { useState, useEffect } from 'react';
 import { calculateTokens } from "@/utils/tokenCalculation";
 import { toast } from "@/components/ui/use-toast";
 
-const DEFAULT_API_KEY = import.meta.env.VITE_DEFAULT_API_KEY;
+// Access environment variable correctly
+const DEFAULT_API_KEY = import.meta.env.VITE_DEFAULT_API_KEY || '';
 
 export function useApiKeyManagement() {
     const [storedApiKey, setStoredApiKey] = useState<string>('');
@@ -20,7 +21,10 @@ export function useApiKeyManagement() {
             verifyExistingApiKey(savedApiKey);
         } else if (DEFAULT_API_KEY) {
             // If no saved key but default key exists, try that
+            console.log("Trying default API key");
             verifyDefaultApiKey(false);
+        } else {
+            console.log("No default API key available");
         }
     }, []);
 
@@ -38,6 +42,8 @@ export function useApiKeyManagement() {
             setIsKeyValid(true);
             setUsingDefaultKey(true);
             localStorage.setItem('geminiApiKey', DEFAULT_API_KEY);
+            
+            console.log("Default API key validation successful");
             
             // Only show success toast if explicitly requested
             if (showSuccessToast) {
