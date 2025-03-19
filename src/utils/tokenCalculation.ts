@@ -1,4 +1,3 @@
-
 // Security measures and optimization for token calculation
 
 export const calculateTokens = async (textToCount: string, apiKey: string): Promise<number> => {
@@ -18,24 +17,16 @@ export const calculateTokens = async (textToCount: string, apiKey: string): Prom
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
     
-    // Using the correct Gemini API model that supports countTokens
-    // The correct model name is gemini-2.0-flash (as per the Python example)
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:countTokens?key=${apiKey}`, {
+    // Using a secure proxy endpoint to handle API key on server-side
+    const response = await fetch(`/api/count-tokens`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest' // CSRF protection
+        'X-Requested-With': 'XMLHttpRequest', // CSRF protection
+        'X-API-Key': apiKey // Send as header instead of query parameter
       },
       body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              {
-                text: textToCount
-              }
-            ]
-          }
-        ]
+        content: textToCount
       }),
       signal: controller.signal
     });

@@ -1,10 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { calculateTokens } from "@/utils/tokenCalculation";
 import { toast } from "@/components/ui/use-toast";
 
-// Access environment variable correctly
-const DEFAULT_API_KEY = import.meta.env.VITE_DEFAULT_API_KEY || '';
+// We don't directly access the environment variable from the client
+// This will be handled server-side now
+const DEFAULT_API_KEY = "DEFAULT_KEY"; // Just a placeholder indicator
 
 export function useApiKeyManagement() {
     const [storedApiKey, setStoredApiKey] = useState<string>('');
@@ -19,24 +19,18 @@ export function useApiKeyManagement() {
             // Set the key but verify it
             setStoredApiKey(savedApiKey);
             verifyExistingApiKey(savedApiKey);
-        } else if (DEFAULT_API_KEY) {
-            // If no saved key but default key exists, try that
+        } else {
+            // Try the default key flow - this will be handled securely on the server
             console.log("Trying default API key");
             verifyDefaultApiKey(false);
-        } else {
-            console.log("No default API key available");
         }
     }, []);
 
     const verifyDefaultApiKey = async (showSuccessToast = false) => {
-        if (!DEFAULT_API_KEY) {
-            console.log("No default API key available");
-            return false;
-        }
-
         setIsLoading(true);
         try {
             const testText = "Verify default key";
+            // Use the placeholder default key - our server will handle this securely
             await calculateTokens(testText, DEFAULT_API_KEY);
             setStoredApiKey(DEFAULT_API_KEY);
             setIsKeyValid(true);
