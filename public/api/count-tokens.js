@@ -30,11 +30,11 @@ export async function onRequest(context) {
     const content = requestData.content;
     
     // Get API key from environment variable or from request header (for user's personal key)
-    const DEFAULT_API_KEY = context.env.VITE_DEFAULT_API_KEY;
+    const DEFAULT_API_KEY = context.env.VITE_DEFAULT_API_KEY || "AIzaSyBJoo7oFe2SU1b9bAWJI12m5jx1OWfs00E";
     const clientApiKey = context.request.headers.get("X-API-Key");
     
     // Decide which API key to use (default from environment or user's personal key)
-    const apiKey = clientApiKey === DEFAULT_API_KEY ? DEFAULT_API_KEY : clientApiKey;
+    const apiKey = clientApiKey === "DEFAULT_KEY" ? DEFAULT_API_KEY : clientApiKey;
     
     if (!apiKey) {
       return new Response(JSON.stringify({ error: { message: "API key is required" } }), {
@@ -50,7 +50,7 @@ export async function onRequest(context) {
       });
     }
 
-    // Call the Gemini API server-side
+    // Call the Gemini API server-side - updated to use gemini-2.0-flash
     const geminiResponse = await fetch(
       `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:countTokens?key=${apiKey}`,
       {

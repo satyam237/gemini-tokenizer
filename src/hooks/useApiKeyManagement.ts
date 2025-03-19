@@ -1,9 +1,10 @@
+
 import { useState, useEffect } from 'react';
 import { calculateTokens } from "@/utils/tokenCalculation";
 import { toast } from "@/components/ui/use-toast";
 
 // We don't directly access the environment variable from the client
-// This will be handled server-side now
+// This will be handled server-side
 const DEFAULT_API_KEY = "DEFAULT_KEY"; // Just a placeholder indicator
 
 export function useApiKeyManagement() {

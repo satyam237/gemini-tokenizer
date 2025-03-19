@@ -1,3 +1,4 @@
+
 // Security measures and optimization for token calculation
 
 export const calculateTokens = async (textToCount: string, apiKey: string): Promise<number> => {
