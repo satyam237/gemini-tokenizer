@@ -18,9 +18,9 @@ export const calculateTokens = async (textToCount: string, apiKey: string): Prom
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout for faster response
     
-    // Make sure we're using the correct path for the API endpoint
-    // For Cloudflare Pages, we need to use the full path starting with /api/
-    const apiUrl = `${window.location.origin}/api/count-tokens`;
+    // IMPORTANT FIX: Use the correct URL for API requests
+    // Don't use relative paths with window.location.origin as that can be problematic in some environments
+    const apiUrl = '/api/count-tokens'; // Use relative path which works regardless of hosting environment
     
     const response = await fetch(apiUrl, {
       method: 'POST',
@@ -46,8 +46,12 @@ export const calculateTokens = async (textToCount: string, apiKey: string): Prom
           const errorData = await response.json();
           errorMessage = `API error: ${response.status} - ${errorData.error?.message || "Unknown error"}`;
         } else {
-          // Don't attempt to parse HTML or other non-JSON responses
-          console.error(`API returned non-JSON response: ${response.status}`);
+          // For HTML responses, don't try to parse them
+          const text = await response.text();
+          if (text.includes('<!DOCTYPE') || text.includes('<html')) {
+            console.error(`API returned HTML response instead of JSON: ${response.status}`);
+            throw new Error(`API endpoint not found (${response.status}). Please check server configuration.`);
+          }
         }
       } catch (parseError) {
         console.error('Error parsing API error response:', parseError);

@@ -44,6 +44,7 @@ export function useApiKeyManagement() {
                     await calculateTokens(testText, DEFAULT_API_KEY);
                     success = true;
                 } catch (error) {
+                    console.log(`Default key verification attempt ${retryCount + 1} failed:`, error);
                     lastError = error;
                     retryCount++;
                     // Wait a short time before retrying
@@ -75,6 +76,7 @@ export function useApiKeyManagement() {
         } catch (error) {
             console.error('Default API key not working:', error);
             setIsKeyValid(false);
+            setUsingDefaultKey(false);
             // Don't show error toast during initial load to reduce notification spam
             return false;
         } finally {
@@ -101,7 +103,7 @@ export function useApiKeyManagement() {
             await calculateTokens(testText, key);
             setStoredApiKey(key);
             setIsKeyValid(true);
-            setUsingDefaultKey(key === DEFAULT_API_KEY);
+            setUsingDefaultKey(key === DEFAULT_KEY);
             return true;
         } catch (error) {
             console.error('Error verifying saved API key:', error);

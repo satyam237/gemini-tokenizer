@@ -28,9 +28,18 @@ export async function onRequest(context) {
       });
     }
 
-    // Get request data
-    const requestData = await context.request.json();
-    const content = requestData.content;
+    // Get request data - with error handling to ensure we don't crash on invalid JSON
+    let content;
+    try {
+      const requestData = await context.request.json();
+      content = requestData.content;
+    } catch (error) {
+      console.error("Error parsing request JSON:", error);
+      return new Response(JSON.stringify({ error: { message: "Invalid JSON in request body" } }), {
+        status: 400,
+        headers
+      });
+    }
     
     // Get API key from environment variable or use hardcoded backup
     // Note: In production, you should always use environment variables
@@ -60,36 +69,51 @@ export async function onRequest(context) {
     console.log("Calling Gemini API for token counting...");
 
     // Call the Gemini API server-side - updated to use gemini-2.0-flash
-    const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:countTokens?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                {
-                  text: content
-                }
-              ]
-            }
-          ]
-        })
-      }
-    );
+    try {
+      const geminiResponse = await fetch(
+        `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:countTokens?key=${apiKey}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  {
+                    text: content
+                  }
+                ]
+              }
+            ]
+          })
+        }
+      );
 
-    // Get response from Gemini API
-    const geminiData = await geminiResponse.json();
-    console.log("Gemini API response received:", JSON.stringify(geminiData).substring(0, 100) + "...");
-    
-    // Pass the response back to the client
-    return new Response(JSON.stringify(geminiData), {
-      status: geminiResponse.status,
-      headers
-    });
+      // Get response from Gemini API
+      const geminiData = await geminiResponse.json();
+      console.log("Gemini API response received:", JSON.stringify(geminiData).substring(0, 100) + "...");
+      
+      // Pass the response back to the client
+      return new Response(JSON.stringify(geminiData), {
+        status: geminiResponse.status,
+        headers
+      });
+    } catch (error) {
+      console.error("Error calling Gemini API:", error);
+      return new Response(
+        JSON.stringify({
+          error: {
+            message: "Error calling Gemini API: " + error.message
+          }
+        }),
+        {
+          status: 500,
+          headers
+        }
+      );
+    }
     
   } catch (error) {
     // Improved error handling to prevent HTML responses
