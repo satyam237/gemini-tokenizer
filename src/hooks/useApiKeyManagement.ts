@@ -5,7 +5,7 @@ import { toast } from "@/components/ui/use-toast";
 
 // We don't directly access the environment variable from the client
 // This will be handled server-side
-const DEFAULT_API_KEY = "DEFAULT_KEY"; // Just a placeholder indicator
+const DEFAULT_API_KEY = "DEFAULT_API_KEY"; // Just a placeholder indicator
 
 export function useApiKeyManagement() {
     const [storedApiKey, setStoredApiKey] = useState<string>('');
