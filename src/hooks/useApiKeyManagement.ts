@@ -32,8 +32,31 @@ export function useApiKeyManagement() {
         try {
             // Use shortest possible text for verification
             const testText = "Test";
-            // Use the placeholder default key - our server will handle this securely
-            await calculateTokens(testText, DEFAULT_API_KEY);
+            
+            // Add a retry mechanism for better reliability
+            let retryCount = 0;
+            let success = false;
+            let lastError;
+            
+            while (retryCount < 2 && !success) {
+                try {
+                    // Use the placeholder default key - our server will handle this securely
+                    await calculateTokens(testText, DEFAULT_API_KEY);
+                    success = true;
+                } catch (error) {
+                    lastError = error;
+                    retryCount++;
+                    // Wait a short time before retrying
+                    if (retryCount < 2) {
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    }
+                }
+            }
+            
+            if (!success) {
+                throw lastError;
+            }
+            
             setStoredApiKey(DEFAULT_API_KEY);
             setIsKeyValid(true);
             setUsingDefaultKey(true);

@@ -12,6 +12,9 @@ export async function onRequest(context) {
       "Content-Type": "application/json"
     };
 
+    // Log for debugging
+    console.log("API route handler invoked: /api/count-tokens");
+
     // Handle preflight requests
     if (context.request.method === "OPTIONS") {
       return new Response(null, { headers, status: 204 });
@@ -34,6 +37,9 @@ export async function onRequest(context) {
     const DEFAULT_API_KEY = context.env.VITE_DEFAULT_API_KEY || "AIzaSyBJoo7oFe2SU1b9bAWJI12m5jx1OWfs00E";
     const clientApiKey = context.request.headers.get("X-API-Key");
     
+    // Log for debugging (with partial key for security)
+    console.log(`API Key received: ${clientApiKey ? clientApiKey.substring(0, 3) + '...' : 'None'}`);
+    
     // Decide which API key to use (default from environment or user's personal key)
     const apiKey = clientApiKey === "DEFAULT_KEY" ? DEFAULT_API_KEY : clientApiKey;
     
@@ -50,6 +56,8 @@ export async function onRequest(context) {
         headers
       });
     }
+
+    console.log("Calling Gemini API for token counting...");
 
     // Call the Gemini API server-side - updated to use gemini-2.0-flash
     const geminiResponse = await fetch(
@@ -75,6 +83,7 @@ export async function onRequest(context) {
 
     // Get response from Gemini API
     const geminiData = await geminiResponse.json();
+    console.log("Gemini API response received:", JSON.stringify(geminiData).substring(0, 100) + "...");
     
     // Pass the response back to the client
     return new Response(JSON.stringify(geminiData), {

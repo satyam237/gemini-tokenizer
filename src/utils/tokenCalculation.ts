@@ -1,3 +1,4 @@
+
 // Security measures and optimization for token calculation
 
 export const calculateTokens = async (textToCount: string, apiKey: string): Promise<number> => {
@@ -17,8 +18,11 @@ export const calculateTokens = async (textToCount: string, apiKey: string): Prom
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout for faster response
     
-    // Using a secure proxy endpoint to handle API key on server-side
-    const response = await fetch(`/api/count-tokens`, {
+    // Make sure we're using the correct path for the API endpoint
+    // For Cloudflare Pages, we need to use the full path starting with /api/
+    const apiUrl = `${window.location.origin}/api/count-tokens`;
+    
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -33,18 +37,23 @@ export const calculateTokens = async (textToCount: string, apiKey: string): Prom
     
     clearTimeout(timeoutId);
 
+    // More robust error handling for non-JSON responses
     if (!response.ok) {
-      const errorText = await response.text();
-      // Try to parse as JSON first (if it's our formatted error)
+      let errorMessage = `API error: ${response.status}`;
       try {
-        const errorJson = JSON.parse(errorText);
-        console.error(`API response error: ${response.status} - ${errorJson.error?.message || errorText}`);
-        throw new Error(`API error: ${response.status} - ${errorJson.error?.message || ""}`);
-      } catch (e) {
-        // If not JSON, it might be HTML or plain text
-        console.error(`API response error: ${response.status} - Not JSON response`);
-        throw new Error(`API error: ${response.status}`);
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const errorData = await response.json();
+          errorMessage = `API error: ${response.status} - ${errorData.error?.message || "Unknown error"}`;
+        } else {
+          // Don't attempt to parse HTML or other non-JSON responses
+          console.error(`API returned non-JSON response: ${response.status}`);
+        }
+      } catch (parseError) {
+        console.error('Error parsing API error response:', parseError);
       }
+      
+      throw new Error(errorMessage);
     }
 
     const data = await response.json();
