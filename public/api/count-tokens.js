@@ -29,7 +29,8 @@ export async function onRequest(context) {
     const requestData = await context.request.json();
     const content = requestData.content;
     
-    // Get API key from environment variable or from request header (for user's personal key)
+    // Get API key from environment variable or use hardcoded backup
+    // Note: In production, you should always use environment variables
     const DEFAULT_API_KEY = context.env.VITE_DEFAULT_API_KEY || "AIzaSyBJoo7oFe2SU1b9bAWJI12m5jx1OWfs00E";
     const clientApiKey = context.request.headers.get("X-API-Key");
     
@@ -82,6 +83,8 @@ export async function onRequest(context) {
     });
     
   } catch (error) {
+    // Improved error handling to prevent HTML responses
+    console.error("Server error:", error.message);
     return new Response(
       JSON.stringify({
         error: {

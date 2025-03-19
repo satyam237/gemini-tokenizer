@@ -21,7 +21,7 @@ export function useApiKeyManagement() {
             setStoredApiKey(savedApiKey);
             verifyExistingApiKey(savedApiKey);
         } else {
-            // Try the default key flow - this will be handled securely on the server
+            // Try the default key flow with a shorter timeout
             console.log("Trying default API key");
             verifyDefaultApiKey(false);
         }
@@ -30,7 +30,8 @@ export function useApiKeyManagement() {
     const verifyDefaultApiKey = async (showSuccessToast = false) => {
         setIsLoading(true);
         try {
-            const testText = "Verify default key";
+            // Use shortest possible text for verification
+            const testText = "Test";
             // Use the placeholder default key - our server will handle this securely
             await calculateTokens(testText, DEFAULT_API_KEY);
             setStoredApiKey(DEFAULT_API_KEY);
@@ -51,6 +52,7 @@ export function useApiKeyManagement() {
         } catch (error) {
             console.error('Default API key not working:', error);
             setIsKeyValid(false);
+            // Don't show error toast during initial load to reduce notification spam
             return false;
         } finally {
             setIsLoading(false);
@@ -71,7 +73,8 @@ export function useApiKeyManagement() {
                 throw new Error("Invalid API key format");
             }
             
-            const testText = "Verify saved key";
+            // Use shortest possible text for quicker verification
+            const testText = "Test";
             await calculateTokens(testText, key);
             setStoredApiKey(key);
             setIsKeyValid(true);

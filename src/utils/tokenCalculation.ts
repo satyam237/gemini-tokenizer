@@ -1,4 +1,3 @@
-
 // Security measures and optimization for token calculation
 
 export const calculateTokens = async (textToCount: string, apiKey: string): Promise<number> => {
@@ -12,11 +11,11 @@ export const calculateTokens = async (textToCount: string, apiKey: string): Prom
     }
     
     // Performance optimization - don't log entire text
-    const logText = textToCount.substring(0, 20) + (textToCount.length > 20 ? "..." : "");
     console.log(`Calling Gemini API for token calculation with ${apiKey.substring(0, 3)}...`);
     
+    // Use a shorter timeout to avoid long waits
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout for faster response
     
     // Using a secure proxy endpoint to handle API key on server-side
     const response = await fetch(`/api/count-tokens`, {
@@ -36,8 +35,16 @@ export const calculateTokens = async (textToCount: string, apiKey: string): Prom
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`API response error: ${response.status} - ${errorText}`);
-      throw new Error(`API error: ${response.status} - ${errorText}`);
+      // Try to parse as JSON first (if it's our formatted error)
+      try {
+        const errorJson = JSON.parse(errorText);
+        console.error(`API response error: ${response.status} - ${errorJson.error?.message || errorText}`);
+        throw new Error(`API error: ${response.status} - ${errorJson.error?.message || ""}`);
+      } catch (e) {
+        // If not JSON, it might be HTML or plain text
+        console.error(`API response error: ${response.status} - Not JSON response`);
+        throw new Error(`API error: ${response.status}`);
+      }
     }
 
     const data = await response.json();
