@@ -12,52 +12,40 @@ export const calculateTokens = async (textToCount: string, apiKey: string): Prom
     }
     
     // Performance optimization - don't log entire text
+    const logText = textToCount.substring(0, 20) + (textToCount.length > 20 ? "..." : "");
     console.log(`Calling Gemini API for token calculation with ${apiKey.substring(0, 3)}...`);
     
-    // Use a shorter timeout to avoid long waits
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout for faster response
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
     
-    // IMPORTANT FIX: Use the correct URL for API requests
-    // Don't use relative paths with window.location.origin as that can be problematic in some environments
-    const apiUrl = '/api/count-tokens'; // Use relative path which works regardless of hosting environment
-    
-    const response = await fetch(apiUrl, {
+    // Using the correct Gemini API model that supports countTokens
+    // The correct model name is gemini-2.0-flash (as per the Python example)
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:countTokens?key=${apiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest', // CSRF protection
-        'X-API-Key': apiKey // Send as header instead of query parameter
+        'X-Requested-With': 'XMLHttpRequest' // CSRF protection
       },
       body: JSON.stringify({
-        content: textToCount
+        contents: [
+          {
+            parts: [
+              {
+                text: textToCount
+              }
+            ]
+          }
+        ]
       }),
       signal: controller.signal
     });
     
     clearTimeout(timeoutId);
 
-    // More robust error handling for non-JSON responses
     if (!response.ok) {
-      let errorMessage = `API error: ${response.status}`;
-      try {
-        const contentType = response.headers.get('content-type');
-        if (contentType && contentType.includes('application/json')) {
-          const errorData = await response.json();
-          errorMessage = `API error: ${response.status} - ${errorData.error?.message || "Unknown error"}`;
-        } else {
-          // For HTML responses, don't try to parse them
-          const text = await response.text();
-          if (text.includes('<!DOCTYPE') || text.includes('<html')) {
-            console.error(`API returned HTML response instead of JSON: ${response.status}`);
-            throw new Error(`API endpoint not found (${response.status}). Please check server configuration.`);
-          }
-        }
-      } catch (parseError) {
-        console.error('Error parsing API error response:', parseError);
-      }
-      
-      throw new Error(errorMessage);
+      const errorText = await response.text();
+      console.error(`API response error: ${response.status} - ${errorText}`);
+      throw new Error(`API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();

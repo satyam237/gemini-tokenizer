@@ -3,9 +3,8 @@ import { useState, useEffect } from 'react';
 import { calculateTokens } from "@/utils/tokenCalculation";
 import { toast } from "@/components/ui/use-toast";
 
-// We don't directly access the environment variable from the client
-// This will be handled server-side
-const DEFAULT_API_KEY = "DEFAULT_API_KEY"; // Just a placeholder indicator
+// Access environment variable correctly
+const DEFAULT_API_KEY = import.meta.env.VITE_DEFAULT_API_KEY || '';
 
 export function useApiKeyManagement() {
     const [storedApiKey, setStoredApiKey] = useState<string>('');
@@ -20,44 +19,25 @@ export function useApiKeyManagement() {
             // Set the key but verify it
             setStoredApiKey(savedApiKey);
             verifyExistingApiKey(savedApiKey);
-        } else {
-            // Try the default key flow with a shorter timeout
+        } else if (DEFAULT_API_KEY) {
+            // If no saved key but default key exists, try that
             console.log("Trying default API key");
             verifyDefaultApiKey(false);
+        } else {
+            console.log("No default API key available");
         }
     }, []);
 
     const verifyDefaultApiKey = async (showSuccessToast = false) => {
+        if (!DEFAULT_API_KEY) {
+            console.log("No default API key available");
+            return false;
+        }
+
         setIsLoading(true);
         try {
-            // Use shortest possible text for verification
-            const testText = "Test";
-            
-            // Add a retry mechanism for better reliability
-            let retryCount = 0;
-            let success = false;
-            let lastError;
-            
-            while (retryCount < 2 && !success) {
-                try {
-                    // Use the placeholder default key - our server will handle this securely
-                    await calculateTokens(testText, DEFAULT_API_KEY);
-                    success = true;
-                } catch (error) {
-                    console.log(`Default key verification attempt ${retryCount + 1} failed:`, error);
-                    lastError = error;
-                    retryCount++;
-                    // Wait a short time before retrying
-                    if (retryCount < 2) {
-                        await new Promise(resolve => setTimeout(resolve, 500));
-                    }
-                }
-            }
-            
-            if (!success) {
-                throw lastError;
-            }
-            
+            const testText = "Verify default key";
+            await calculateTokens(testText, DEFAULT_API_KEY);
             setStoredApiKey(DEFAULT_API_KEY);
             setIsKeyValid(true);
             setUsingDefaultKey(true);
@@ -76,8 +56,6 @@ export function useApiKeyManagement() {
         } catch (error) {
             console.error('Default API key not working:', error);
             setIsKeyValid(false);
-            setUsingDefaultKey(false);
-            // Don't show error toast during initial load to reduce notification spam
             return false;
         } finally {
             setIsLoading(false);
@@ -98,12 +76,11 @@ export function useApiKeyManagement() {
                 throw new Error("Invalid API key format");
             }
             
-            // Use shortest possible text for quicker verification
-            const testText = "Test";
+            const testText = "Verify saved key";
             await calculateTokens(testText, key);
             setStoredApiKey(key);
             setIsKeyValid(true);
-            setUsingDefaultKey(key === DEFAULT_KEY);
+            setUsingDefaultKey(key === DEFAULT_API_KEY);
             return true;
         } catch (error) {
             console.error('Error verifying saved API key:', error);
