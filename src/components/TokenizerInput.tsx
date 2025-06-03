@@ -10,15 +10,13 @@ interface TokenizerInputProps {
   onTextChange: (text: string) => void;
   onClear: () => void;
   onShowExample: () => void;
-  onResetApiKey: () => void;
 }
 
 export const TokenizerInput = ({ 
   text, 
   onTextChange, 
   onClear, 
-  onShowExample, 
-  onResetApiKey 
+  onShowExample
 }: TokenizerInputProps) => {
   const { theme } = useTheme();
 
@@ -31,32 +29,22 @@ export const TokenizerInput = ({
         onChange={(e) => onTextChange(e.target.value)}
       />
       
-      <div className={`p-4 flex justify-between items-center border-t ${theme === 'dark' ? 'border-gray-800' : 'border-gray-100'}`}>
-        <div className="flex gap-3">
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={onClear}
-            className={`${theme === 'dark' ? 'border-gray-700 hover:bg-gray-800' : ''}`}
-          >
-            Clear
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={onShowExample}
-            className={`${theme === 'dark' ? 'border-gray-700 hover:bg-gray-800' : ''}`}
-          >
-            Show example
-          </Button>
-        </div>
+      <div className={`p-4 flex gap-3 border-t ${theme === 'dark' ? 'border-gray-800' : 'border-gray-100'}`}>
         <Button 
-          variant="ghost" 
+          variant="outline" 
           size="sm"
-          onClick={onResetApiKey}
-          className={`text-xs ${theme === 'dark' ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'}`}
+          onClick={onClear}
+          className={`${theme === 'dark' ? 'border-gray-700 hover:bg-gray-800' : ''}`}
         >
-          Reset API Key
+          Clear
+        </Button>
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={onShowExample}
+          className={`${theme === 'dark' ? 'border-gray-700 hover:bg-gray-800' : ''}`}
+        >
+          Show example
         </Button>
       </div>
     </Card>

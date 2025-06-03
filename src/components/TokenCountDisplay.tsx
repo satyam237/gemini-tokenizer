@@ -32,21 +32,15 @@ export const TokenCountDisplay = ({
                     <CircleHelp className="h-4 w-4 cursor-help text-amber-500" />
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p className="max-w-xs">This is an estimated count. For accurate counts, please enter your Gemini API key.</p>
+                    <p className="max-w-xs">This is an estimated count based on text analysis.</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             )}
           </div>
           <div className="text-2xl font-semibold flex items-center gap-2">
-            {isLoading ? (
-              <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>Calculating...</span>
-            ) : (
-              <>
-                {typeof tokenCount === 'number' ? tokenCount : 0}
-                {!isKeyValid && <span className="text-xs text-amber-500">(est.)</span>}
-              </>
-            )}
+            {typeof tokenCount === 'number' ? tokenCount : 0}
+            {!isKeyValid && <span className="text-xs text-amber-500">(est.)</span>}
           </div>
         </div>
         <div>
@@ -58,7 +52,7 @@ export const TokenCountDisplay = ({
       <div className={`text-sm mt-2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} text-center`}>
         {isKeyValid ? 
           "Token counts are provided by the official Gemini API." :
-          "Token counts are currently estimated. For accurate counts, please enter your Gemini API key."
+          "Token counts are estimated based on text analysis patterns."
         }
       </div>
     </>
