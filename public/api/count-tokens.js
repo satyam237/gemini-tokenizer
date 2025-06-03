@@ -15,7 +15,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Valid text is required' });
     }
 
-    // Validate model
+    // Validate model - ensure all models match exactly
     const validModels = [
       'gemini-1.5-flash',
       'gemini-1.5-pro',
@@ -26,7 +26,8 @@ export default async function handler(req, res) {
     ];
 
     if (!validModels.includes(model)) {
-      return res.status(400).json({ error: 'Invalid model specified' });
+      console.error(`Invalid model specified: ${model}. Valid models: ${validModels.join(', ')}`);
+      return res.status(400).json({ error: `Invalid model specified: ${model}` });
     }
 
     // Security: Limit text length
@@ -76,6 +77,8 @@ export default async function handler(req, res) {
         error: data.error.message || 'Unknown API error' 
       });
     }
+
+    console.log(`Token calculation successful for model ${model}: ${data.totalTokens} tokens`);
 
     // Return the token count
     return res.status(200).json({

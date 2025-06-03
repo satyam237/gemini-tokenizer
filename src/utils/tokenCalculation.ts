@@ -1,3 +1,4 @@
+
 // Security measures and optimization for token calculation
 
 export const calculateTokens = async (textToCount: string, apiKey: string, model: string = 'gemini-1.5-flash'): Promise<number> => {
@@ -99,7 +100,7 @@ export const calculateTokensWithDefaultKey = async (textToCount: string, model: 
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`Server API response error: ${response.status}`);
+      console.error(`Server API response error: ${response.status} - ${errorText}`);
       throw new Error(`Server API error: ${response.status}`);
     }
 
@@ -115,6 +116,7 @@ export const calculateTokensWithDefaultKey = async (textToCount: string, model: 
       throw new Error("Unexpected response format from server");
     }
     
+    console.log(`Token calculation successful for model ${model}: ${data.totalTokens} tokens`);
     return data.totalTokens || 0;
     
   } catch (error) {

@@ -18,15 +18,20 @@ export function useTokenCalculation(selectedModel: string) {
             // Security: Validate input before sending to API
             const sanitizedText = textToCount.slice(0, 100000); // Reasonable limit
             
+            console.log(`Starting token calculation with model: ${selectedModel}`);
             const count = await calculateTokensWithDefaultKey(sanitizedText, selectedModel);
             
             const numericCount = typeof count === 'string' ? parseInt(count, 10) : count;
-            setTokenCount(isNaN(numericCount) ? 0 : numericCount);
+            const finalCount = isNaN(numericCount) ? 0 : numericCount;
+            
+            console.log(`Token calculation result: ${finalCount} tokens for model: ${selectedModel}`);
+            setTokenCount(finalCount);
             
         } catch (error: any) {
-            console.error('Error counting tokens:', error);
+            console.error('Error counting tokens with API:', error);
             
-            // Use fallback estimation silently
+            // Only use fallback estimation as last resort
+            console.log('Falling back to estimation method');
             const estimate = estimateTokens(textToCount);
             setTokenCount(estimate);
         }
@@ -42,21 +47,22 @@ export function useTokenCalculation(selectedModel: string) {
         // Clear any existing timer
         if (debounceTimer) clearTimeout(debounceTimer);
         
-        // Very short debounce for API calls (100ms for instant feel)
+        // Very short debounce for API calls (50ms for instant feel)
         const timer = setTimeout(() => {
-            handleTokenCalculation(text).catch(() => {
+            handleTokenCalculation(text).catch((error) => {
+                console.error('Token calculation failed:', error);
                 // Silent fallback to estimation
                 const estimate = estimateTokens(text);
                 setTokenCount(estimate);
             });
-        }, 100);
+        }, 50);
         
         setDebounceTimer(timer);
         
         return () => {
             if (timer) clearTimeout(timer);
         };
-    }, [text, handleTokenCalculation]);
+    }, [text, selectedModel, handleTokenCalculation]);
 
     const handleTextChange = (newText: string): void => {
         setText(newText);
