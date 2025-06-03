@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useTheme } from "@/components/ThemeProvider";
 import { TokenizerInput } from "@/components/TokenizerInput";
@@ -37,7 +38,7 @@ const Index: React.FC = () => {
         "@context": "https://schema.org",
         "@type": "WebApplication",
         "name": "Gemini Tokenizer",
-        "description": "An accurate token counter tool for Gemini AI models to help calculate token usage for prompts and responses.",
+        "description": "An accurate token counter tool for all Gemini AI models to help calculate token usage for prompts and responses.",
         "applicationCategory": "DeveloperApplication",
         "operatingSystem": "Any",
         "offers": {
@@ -57,10 +58,10 @@ const Index: React.FC = () => {
     };
 
     return (
-        <div className={`min-h-screen ${theme === 'dark' ? 'bg-gray-950' : 'bg-gray-50'} p-6`}>
+        <div className={`min-h-screen text-base ${theme === 'dark' ? 'bg-gray-950' : 'bg-gray-50'} p-6`}>
             <Helmet>
-                <title>Gemini Tokenizer - Accurate Token Counter for Gemini AI Models</title>
-                <meta name="description" content="Free online tool to accurately count tokens for Gemini AI models. Calculate token usage for your Gemini prompts and responses to optimize your AI applications and API costs." />
+                <title>Gemini Tokenizer - Accurate Token Counter for All Gemini AI Models</title>
+                <meta name="description" content="Free online tool to accurately count tokens for all Gemini AI models including 1.5 Flash, 1.5 Pro, 2.0 Flash, 2.0 Flash Lite, and 2.5 models. Calculate token usage for your Gemini prompts and responses to optimize your AI applications and API costs." />
                 <meta name="keywords" content="gemini tokenizer, gemini token counter, gemini token count, gemini tokens, gemini AI, token calculator, AI tokens, gemini text to tokens, count tokens for gemini, gemini token usage, gemini API tokens" />
                 <meta name="referrer" content="no-referrer" />
                 <meta httpEquiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://generativelanguage.googleapis.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;" />

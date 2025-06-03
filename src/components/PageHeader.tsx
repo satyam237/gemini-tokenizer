@@ -7,11 +7,11 @@ export const PageHeader: React.FC = () => {
 
     return (
         <div className="space-y-2">
-            <h1 className={`text-3xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+            <h1 className={`text-4xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
                 Gemini Tokenizer
             </h1>
-            <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                Accurate token counter for Gemini AI models | Calculate tokens for your prompts
+            <p className={`text-lg ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+                Accurate token counter for all Gemini AI models | Calculate tokens for your prompts
             </p>
         </div>
     );
