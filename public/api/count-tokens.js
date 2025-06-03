@@ -8,10 +8,23 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { text } = req.body;
+    const { text, model = 'gemini-1.5-flash' } = req.body;
     
     if (!text || typeof text !== 'string') {
       return res.status(400).json({ error: 'Valid text is required' });
+    }
+
+    // Validate model
+    const validModels = [
+      'gemini-1.5-flash',
+      'gemini-1.5-pro',
+      'gemini-2.0-flash-lite',
+      'gemini-2.5-flash-preview-05-20',
+      'gemini-2.5-pro-preview-05-06'
+    ];
+
+    if (!validModels.includes(model)) {
+      return res.status(400).json({ error: 'Invalid model specified' });
     }
 
     // Security: Limit text length
@@ -24,10 +37,10 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Default API key not configured' });
     }
 
-    console.log('Server: Making secure API call to Gemini');
+    console.log(`Server: Making secure API call to Gemini with model: ${model}`);
 
     // Make the API call server-side to keep the key secure
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:countTokens?key=${DEFAULT_API_KEY}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/${model}:countTokens?key=${DEFAULT_API_KEY}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

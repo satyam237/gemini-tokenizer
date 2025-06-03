@@ -1,8 +1,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { calculateTokens, calculateTokensWithDefaultKey, estimateTokens } from "@/utils/tokenCalculation";
+import { calculateTokensWithDefaultKey, estimateTokens } from "@/utils/tokenCalculation";
 
-export function useTokenCalculation(apiKey: string, isKeyValid: boolean, setIsLoading: (loading: boolean) => void) {
+export function useTokenCalculation(selectedModel: string) {
     const [text, setText] = useState<string>('');
     const [tokenCount, setTokenCount] = useState<number>(0);
     const [debounceTimer, setDebounceTimer] = useState<NodeJS.Timeout | null>(null);
@@ -18,16 +18,7 @@ export function useTokenCalculation(apiKey: string, isKeyValid: boolean, setIsLo
             // Security: Validate input before sending to API
             const sanitizedText = textToCount.slice(0, 100000); // Reasonable limit
             
-            let count: number;
-            
-            // Use server-side secure endpoint if using default key
-            if (apiKey === '__DEFAULT_KEY__') {
-                count = await calculateTokensWithDefaultKey(sanitizedText);
-            } else if (apiKey) {
-                count = await calculateTokens(sanitizedText, apiKey);
-            } else {
-                throw new Error("No API key available");
-            }
+            const count = await calculateTokensWithDefaultKey(sanitizedText, selectedModel);
             
             const numericCount = typeof count === 'string' ? parseInt(count, 10) : count;
             setTokenCount(isNaN(numericCount) ? 0 : numericCount);
@@ -39,19 +30,12 @@ export function useTokenCalculation(apiKey: string, isKeyValid: boolean, setIsLo
             const estimate = estimateTokens(textToCount);
             setTokenCount(estimate);
         }
-    }, [apiKey]);
+    }, [selectedModel]);
 
     // Instant token calculation with very short debounce for performance
     useEffect(() => {
         if (!text) {
             setTokenCount(0);
-            return;
-        }
-
-        if (!isKeyValid) {
-            // Instant estimation for no API key
-            const estimate = estimateTokens(text);
-            setTokenCount(estimate);
             return;
         }
         
@@ -72,7 +56,7 @@ export function useTokenCalculation(apiKey: string, isKeyValid: boolean, setIsLo
         return () => {
             if (timer) clearTimeout(timer);
         };
-    }, [text, isKeyValid, handleTokenCalculation]);
+    }, [text, handleTokenCalculation]);
 
     const handleTextChange = (newText: string): void => {
         setText(newText);

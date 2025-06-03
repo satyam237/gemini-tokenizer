@@ -1,7 +1,6 @@
-
 // Security measures and optimization for token calculation
 
-export const calculateTokens = async (textToCount: string, apiKey: string): Promise<number> => {
+export const calculateTokens = async (textToCount: string, apiKey: string, model: string = 'gemini-1.5-flash'): Promise<number> => {
   if (!textToCount) return 0;
   if (!apiKey) throw new Error("API key is required for token calculation");
   
@@ -11,15 +10,13 @@ export const calculateTokens = async (textToCount: string, apiKey: string): Prom
       textToCount = textToCount.substring(0, 100000);
     }
     
-    // Performance optimization - don't log entire text or full API key
-    const logText = textToCount.substring(0, 20) + (textToCount.length > 20 ? "..." : "");
-    console.log(`Calling Gemini API for token calculation`);
+    console.log(`Calling Gemini API for token calculation with model: ${model}`);
     
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
     
-    // Using the correct Gemini API model that supports countTokens
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:countTokens?key=${apiKey}`, {
+    // Using the specified Gemini API model
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/${model}:countTokens?key=${apiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -71,7 +68,7 @@ export const calculateTokens = async (textToCount: string, apiKey: string): Prom
 };
 
 // Server-side token calculation using default key (secure)
-export const calculateTokensWithDefaultKey = async (textToCount: string): Promise<number> => {
+export const calculateTokensWithDefaultKey = async (textToCount: string, model: string = 'gemini-1.5-flash'): Promise<number> => {
   if (!textToCount) return 0;
   
   try {
@@ -80,7 +77,7 @@ export const calculateTokensWithDefaultKey = async (textToCount: string): Promis
       textToCount = textToCount.substring(0, 100000);
     }
     
-    console.log(`Using server-side API for token calculation`);
+    console.log(`Using server-side API for token calculation with model: ${model}`);
     
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
@@ -92,7 +89,8 @@ export const calculateTokensWithDefaultKey = async (textToCount: string): Promis
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        text: textToCount
+        text: textToCount,
+        model: model
       }),
       signal: controller.signal
     });

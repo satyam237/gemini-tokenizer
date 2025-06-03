@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useTheme } from "@/components/ThemeProvider";
 import { TokenizerInput } from "@/components/TokenizerInput";
@@ -7,21 +6,14 @@ import { TokenizationInfo } from "@/components/TokenizationInfo";
 import { Introduction } from "@/components/Introduction";
 import { PageHeader } from "@/components/PageHeader";
 import { PageFooter } from "@/components/PageFooter";
-import { useApiKeyManagement } from "@/hooks/useApiKeyManagement";
+import { ModelSelector } from "@/components/ModelSelector";
 import { useTokenCalculation } from "@/hooks/useTokenCalculation";
 import { Helmet } from 'react-helmet';
 import { estimateTokens } from "@/utils/tokenCalculation";
 
 const Index: React.FC = () => {
     const { theme } = useTheme();
-    
-    const {
-        storedApiKey,
-        isKeyValid,
-        isLoading,
-        usingDefaultKey,
-        setIsLoading
-    } = useApiKeyManagement();
+    const [selectedModel, setSelectedModel] = useState('gemini-1.5-flash');
 
     const {
         text,
@@ -29,16 +21,16 @@ const Index: React.FC = () => {
         handleTextChange,
         handleClear,
         handleShowExample
-    } = useTokenCalculation(storedApiKey, isKeyValid, setIsLoading);
+    } = useTokenCalculation(selectedModel);
 
     const [estimatedTokenCount, setEstimatedTokenCount] = useState(0);
 
-    // Always provide estimated counts even when API is not available
+    // Always provide estimated counts as fallback
     useEffect(() => {
-        if (text && !isKeyValid) {
+        if (text) {
             setEstimatedTokenCount(estimateTokens(text));
         }
-    }, [text, isKeyValid]);
+    }, [text]);
 
     // Structured data for SEO
     const structuredData = {
@@ -80,6 +72,11 @@ const Index: React.FC = () => {
                 <PageHeader />
                 <Introduction />
 
+                <ModelSelector 
+                    selectedModel={selectedModel}
+                    onModelChange={setSelectedModel}
+                />
+
                 <TokenizerInput
                     text={text}
                     onTextChange={handleTextChange}
@@ -88,10 +85,10 @@ const Index: React.FC = () => {
                 />
 
                 <TokenCountDisplay
-                    tokenCount={isKeyValid ? tokenCount : estimatedTokenCount}
+                    tokenCount={tokenCount}
                     characterCount={text.length}
                     isLoading={false}
-                    isKeyValid={isKeyValid}
+                    isKeyValid={true}
                 />
 
                 <TokenizationInfo />
