@@ -11,15 +11,14 @@ export const calculateTokens = async (textToCount: string, apiKey: string): Prom
       textToCount = textToCount.substring(0, 100000);
     }
     
-    // Performance optimization - don't log entire text
+    // Performance optimization - don't log entire text or full API key
     const logText = textToCount.substring(0, 20) + (textToCount.length > 20 ? "..." : "");
-    console.log(`Calling Gemini API for token calculation with ${apiKey.substring(0, 3)}...`);
+    console.log(`Calling Gemini API for token calculation`);
     
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
     
     // Using the correct Gemini API model that supports countTokens
-    // The correct model name is gemini-2.0-flash (as per the Python example)
     const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:countTokens?key=${apiKey}`, {
       method: 'POST',
       headers: {
@@ -44,8 +43,8 @@ export const calculateTokens = async (textToCount: string, apiKey: string): Prom
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`API response error: ${response.status} - ${errorText}`);
-      throw new Error(`API error: ${response.status} - ${errorText}`);
+      console.error(`API response error: ${response.status}`);
+      throw new Error(`API error: ${response.status}`);
     }
 
     const data = await response.json();
@@ -67,6 +66,61 @@ export const calculateTokens = async (textToCount: string, apiKey: string): Prom
     
   } catch (error) {
     console.error("Error in calculateTokens:", error);
+    throw error;
+  }
+};
+
+// Server-side token calculation using default key (secure)
+export const calculateTokensWithDefaultKey = async (textToCount: string): Promise<number> => {
+  if (!textToCount) return 0;
+  
+  try {
+    // Security: Prevent API misuse by enforcing reasonable limits
+    if (textToCount.length > 100000) {
+      textToCount = textToCount.substring(0, 100000);
+    }
+    
+    console.log(`Using server-side API for token calculation`);
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    
+    // Use our secure server-side endpoint
+    const response = await fetch('/api/count-tokens', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        text: textToCount
+      }),
+      signal: controller.signal
+    });
+    
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Server API response error: ${response.status}`);
+      throw new Error(`Server API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    if (data.error) {
+      console.error("Server API returned an error:", data.error);
+      throw new Error(data.error);
+    }
+    
+    if (typeof data.totalTokens !== 'number') {
+      console.error("Unexpected server response format:", data);
+      throw new Error("Unexpected response format from server");
+    }
+    
+    return data.totalTokens || 0;
+    
+  } catch (error) {
+    console.error("Error in calculateTokensWithDefaultKey:", error);
     throw error;
   }
 };

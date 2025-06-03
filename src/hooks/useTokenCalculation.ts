@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { calculateTokens, estimateTokens } from "@/utils/tokenCalculation";
+import { calculateTokens, calculateTokensWithDefaultKey, estimateTokens } from "@/utils/tokenCalculation";
 import { toast } from "@/components/ui/use-toast";
 
 export function useTokenCalculation(apiKey: string, isKeyValid: boolean, setIsLoading: (loading: boolean) => void) {
@@ -11,14 +11,24 @@ export function useTokenCalculation(apiKey: string, isKeyValid: boolean, setIsLo
 
     // Use memoized calculation function to prevent unnecessary renders
     const handleTokenCalculation = useCallback(async (textToCount: string): Promise<void> => {
-        if (!textToCount || !apiKey) return;
+        if (!textToCount) return;
 
         setIsLoading(true);
         try {
             // Security: Validate input before sending to API
             const sanitizedText = textToCount.slice(0, 100000); // Reasonable limit
             
-            const count = await calculateTokens(sanitizedText, apiKey);
+            let count: number;
+            
+            // Use server-side secure endpoint if using default key
+            if (apiKey === '__DEFAULT_KEY__') {
+                count = await calculateTokensWithDefaultKey(sanitizedText);
+            } else if (apiKey) {
+                count = await calculateTokens(sanitizedText, apiKey);
+            } else {
+                throw new Error("No API key available");
+            }
+            
             const numericCount = typeof count === 'string' ? parseInt(count, 10) : count;
             setTokenCount(isNaN(numericCount) ? 0 : numericCount);
             
@@ -50,7 +60,7 @@ export function useTokenCalculation(apiKey: string, isKeyValid: boolean, setIsLo
 
     // Efficient debouncing mechanism
     useEffect(() => {
-        if (!text || !isKeyValid || !apiKey) return;
+        if (!text || !isKeyValid) return;
         
         // Clear any existing timer
         if (debounceTimer) clearTimeout(debounceTimer);
@@ -70,7 +80,7 @@ export function useTokenCalculation(apiKey: string, isKeyValid: boolean, setIsLo
         return () => {
             if (timer) clearTimeout(timer);
         };
-    }, [text, isKeyValid, apiKey, handleTokenCalculation]);
+    }, [text, isKeyValid, handleTokenCalculation]);
 
     const handleTextChange = (newText: string): void => {
         setText(newText);

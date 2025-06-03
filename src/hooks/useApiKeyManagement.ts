@@ -1,10 +1,7 @@
 
 import { useState, useEffect } from 'react';
-import { calculateTokens } from "@/utils/tokenCalculation";
+import { calculateTokens, calculateTokensWithDefaultKey } from "@/utils/tokenCalculation";
 import { toast } from "@/components/ui/use-toast";
-
-// Access environment variable correctly
-const DEFAULT_API_KEY = import.meta.env.VITE_DEFAULT_API_KEY || '';
 
 export function useApiKeyManagement() {
     const [storedApiKey, setStoredApiKey] = useState<string>('');
@@ -19,43 +16,38 @@ export function useApiKeyManagement() {
             // Set the key but verify it
             setStoredApiKey(savedApiKey);
             verifyExistingApiKey(savedApiKey);
-        } else if (DEFAULT_API_KEY) {
-            // If no saved key but default key exists, try that
-            console.log("Trying default API key");
-            verifyDefaultApiKey(false);
         } else {
-            console.log("No default API key available");
+            // Try to use server-side default key
+            console.log("Trying server-side default API key");
+            verifyDefaultApiKey(false);
         }
     }, []);
 
     const verifyDefaultApiKey = async (showSuccessToast = false) => {
-        if (!DEFAULT_API_KEY) {
-            console.log("No default API key available");
-            return false;
-        }
-
         setIsLoading(true);
         try {
-            const testText = "Verify default key";
-            await calculateTokens(testText, DEFAULT_API_KEY);
-            setStoredApiKey(DEFAULT_API_KEY);
+            const testText = "Test";
+            // Use secure server-side endpoint that doesn't expose the API key
+            await calculateTokensWithDefaultKey(testText);
+            
+            // Set a placeholder to indicate we're using default key
+            setStoredApiKey('__DEFAULT_KEY__');
             setIsKeyValid(true);
             setUsingDefaultKey(true);
-            localStorage.setItem('geminiApiKey', DEFAULT_API_KEY);
             
-            console.log("Default API key validation successful");
+            console.log("Default API key validation successful (server-side)");
             
-            // Only show success toast if explicitly requested
             if (showSuccessToast) {
                 toast({
                     title: "Using Default API Key",
-                    description: "Connected with the default Gemini API key"
+                    description: "Connected with the secure default Gemini API key"
                 });
             }
             return true;
         } catch (error) {
             console.error('Default API key not working:', error);
             setIsKeyValid(false);
+            setUsingDefaultKey(false);
             return false;
         } finally {
             setIsLoading(false);
@@ -63,10 +55,8 @@ export function useApiKeyManagement() {
     };
 
     const verifyExistingApiKey = async (key: string) => {
-        if (!key) {
-            console.error('No API key provided for verification');
-            setIsKeyValid(false);
-            return false;
+        if (!key || key === '__DEFAULT_KEY__') {
+            return verifyDefaultApiKey(false);
         }
 
         setIsLoading(true);
@@ -76,17 +66,16 @@ export function useApiKeyManagement() {
                 throw new Error("Invalid API key format");
             }
             
-            const testText = "Verify saved key";
+            const testText = "Test";
             await calculateTokens(testText, key);
             setStoredApiKey(key);
             setIsKeyValid(true);
-            setUsingDefaultKey(key === DEFAULT_API_KEY);
+            setUsingDefaultKey(false);
             return true;
         } catch (error) {
             console.error('Error verifying saved API key:', error);
-            // Don't clear the stored key here, just mark it as invalid
-            setIsKeyValid(false);
-            return false;
+            // Fall back to default key if user key fails
+            return await verifyDefaultApiKey(false);
         } finally {
             setIsLoading(false);
         }
@@ -100,18 +89,13 @@ export function useApiKeyManagement() {
         localStorage.setItem('geminiApiKey', sanitizedKey);
         setStoredApiKey(sanitizedKey);
         setIsKeyValid(true);
-        setUsingDefaultKey(sanitizedKey === DEFAULT_API_KEY);
+        setUsingDefaultKey(false);
     };
 
     const handleResetApiKey = (): void => {
         localStorage.removeItem('geminiApiKey');
-        setStoredApiKey('');
-        setIsKeyValid(false);
-        setUsingDefaultKey(false);
-        toast({
-            title: "API Key Removed",
-            description: "Your API key has been removed"
-        });
+        // Reset to default key instead of no key
+        verifyDefaultApiKey(true);
     };
 
     return {
