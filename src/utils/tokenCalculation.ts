@@ -1,4 +1,3 @@
-
 // Security measures and optimization for token calculation
 
 export const calculateTokens = async (textToCount: string, apiKey: string, model: string = 'gemini-1.5-flash'): Promise<number> => {
@@ -10,8 +9,6 @@ export const calculateTokens = async (textToCount: string, apiKey: string, model
     if (textToCount.length > 100000) {
       textToCount = textToCount.substring(0, 100000);
     }
-    
-    console.log(`Calling Gemini API for token calculation with model: ${model}`);
     
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
@@ -41,7 +38,6 @@ export const calculateTokens = async (textToCount: string, apiKey: string, model
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`API response error: ${response.status}`);
       throw new Error(`API error: ${response.status}`);
     }
 
@@ -50,20 +46,17 @@ export const calculateTokens = async (textToCount: string, apiKey: string, model
     // Check for API errors
     if (data.error) {
       const errorMessage = data.error.message || "Unknown API error";
-      console.error("API returned an error:", errorMessage);
       throw new Error(errorMessage);
     }
     
     // Validate response format
     if (typeof data.totalTokens !== 'number') {
-      console.error("Unexpected response format:", data);
       throw new Error("Unexpected response format from Gemini API");
     }
     
     return data.totalTokens || 0;
     
   } catch (error) {
-    console.error("Error in calculateTokens:", error);
     throw error;
   }
 };
@@ -77,8 +70,6 @@ export const calculateTokensWithDefaultKey = async (textToCount: string, model: 
     if (textToCount.length > 100000) {
       textToCount = textToCount.substring(0, 100000);
     }
-    
-    console.log(`Using server-side API for token calculation with model: ${model}`);
     
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
@@ -100,27 +91,22 @@ export const calculateTokensWithDefaultKey = async (textToCount: string, model: 
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`Server API response error: ${response.status} - ${errorText}`);
       throw new Error(`Server API error: ${response.status}`);
     }
 
     const data = await response.json();
     
     if (data.error) {
-      console.error("Server API returned an error:", data.error);
       throw new Error(data.error);
     }
     
     if (typeof data.totalTokens !== 'number') {
-      console.error("Unexpected server response format:", data);
       throw new Error("Unexpected response format from server");
     }
     
-    console.log(`Token calculation successful for model ${model}: ${data.totalTokens} tokens`);
     return data.totalTokens || 0;
     
   } catch (error) {
-    console.error("Error in calculateTokensWithDefaultKey:", error);
     throw error;
   }
 };

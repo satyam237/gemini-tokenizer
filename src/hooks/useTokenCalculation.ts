@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { calculateTokensWithDefaultKey, estimateTokens } from "@/utils/tokenCalculation";
 
@@ -16,22 +15,20 @@ export function useTokenCalculation(selectedModel: string) {
 
         try {
             // Security: Validate input before sending to API
-            const sanitizedText = textToCount.slice(0, 100000); // Reasonable limit
+            const trimmedText = textToCount.trim(); // Trim leading/trailing whitespace
+            const sanitizedText = trimmedText.slice(0, 100000); // Reasonable limit
             
-            console.log(`Starting token calculation with model: ${selectedModel}`);
             const count = await calculateTokensWithDefaultKey(sanitizedText, selectedModel);
             
             const numericCount = typeof count === 'string' ? parseInt(count, 10) : count;
             const finalCount = isNaN(numericCount) ? 0 : numericCount;
             
-            console.log(`Token calculation result: ${finalCount} tokens for model: ${selectedModel}`);
             setTokenCount(finalCount);
             
         } catch (error: any) {
             console.error('Error counting tokens with API:', error);
             
             // Only use fallback estimation as last resort
-            console.log('Falling back to estimation method');
             const estimate = estimateTokens(textToCount);
             setTokenCount(estimate);
         }
