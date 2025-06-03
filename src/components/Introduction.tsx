@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useTheme } from "@/components/ThemeProvider";
 
@@ -14,7 +13,7 @@ export const Introduction: React.FC = () => {
             </p>
 
             <p>
-                This <span className="font-medium">Gemini token counter</span> uses the <span className="font-medium">Gemini 2.0 Flash</span> model to accurately count tokens.
+                This <span className="font-medium">Gemini token counter</span> uses the selected Gemini AI model to accurately count tokens.
                 You can use it to understand how a piece of text might be tokenized by Gemini AI models, and the total count of tokens in that text.
                 Optimize your API costs by knowing exactly how many tokens your prompts and responses will use.
             </p>
