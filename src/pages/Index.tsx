@@ -38,7 +38,7 @@ const Index: React.FC = () => {
         "@context": "https://schema.org",
         "@type": "WebApplication",
         "name": "Gemini Tokenizer",
-        "description": "An accurate token counter tool for all Gemini AI models to help calculate token usage for prompts and responses.",
+        "description": "An accurate token counter tool for all Gemini AI models including 1.5, 2.0, and 2.5 series to help calculate token usage for prompts and responses.",
         "applicationCategory": "DeveloperApplication",
         "operatingSystem": "Any",
         "offers": {
@@ -58,7 +58,7 @@ const Index: React.FC = () => {
     };
 
     return (
-        <div className={`min-h-screen text-base ${theme === 'dark' ? 'bg-gray-950' : 'bg-gray-50'} p-6`}>
+        <div className={`min-h-screen ${theme === 'dark' ? 'bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950' : 'bg-gradient-to-br from-gray-50 via-white to-gray-100'}`}>
             <Helmet>
                 <title>Gemini Tokenizer - Accurate Token Counter for All Gemini AI Models</title>
                 <meta name="description" content="Free online tool to accurately count tokens for all Gemini AI models including 1.5 Flash, 1.5 Pro, 2.0 Flash, 2.0 Flash Lite, and 2.5 models. Calculate token usage for your Gemini prompts and responses to optimize your AI applications and API costs." />
@@ -69,31 +69,52 @@ const Index: React.FC = () => {
                     {JSON.stringify(structuredData)}
                 </script>
             </Helmet>
-            <div className="max-w-4xl mx-auto space-y-8">
-                <PageHeader />
-                <Introduction />
+            
+            <div className="relative">
+                {/* Background decoration */}
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <div className={`absolute -top-40 -right-40 w-80 h-80 rounded-full opacity-20 ${theme === 'dark' ? 'bg-blue-500' : 'bg-blue-200'} blur-3xl`}></div>
+                    <div className={`absolute -bottom-40 -left-40 w-80 h-80 rounded-full opacity-20 ${theme === 'dark' ? 'bg-purple-500' : 'bg-purple-200'} blur-3xl`}></div>
+                </div>
+                
+                <div className="relative z-10 max-w-5xl mx-auto px-6 py-12 space-y-12">
+                    <PageHeader />
+                    
+                    <div className={`backdrop-blur-sm bg-opacity-50 ${theme === 'dark' ? 'bg-gray-900' : 'bg-white'} rounded-2xl border ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'} shadow-2xl p-8`}>
+                        <Introduction />
+                    </div>
 
-                <ModelSelector 
-                    selectedModel={selectedModel}
-                    onModelChange={setSelectedModel}
-                />
+                    <div className={`backdrop-blur-sm bg-opacity-50 ${theme === 'dark' ? 'bg-gray-900' : 'bg-white'} rounded-2xl border ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'} shadow-2xl p-8`}>
+                        <ModelSelector 
+                            selectedModel={selectedModel}
+                            onModelChange={setSelectedModel}
+                        />
+                    </div>
 
-                <TokenizerInput
-                    text={text}
-                    onTextChange={handleTextChange}
-                    onClear={handleClear}
-                    onShowExample={handleShowExample}
-                />
+                    <div className={`backdrop-blur-sm bg-opacity-50 ${theme === 'dark' ? 'bg-gray-900' : 'bg-white'} rounded-2xl border ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'} shadow-2xl overflow-hidden`}>
+                        <TokenizerInput
+                            text={text}
+                            onTextChange={handleTextChange}
+                            onClear={handleClear}
+                            onShowExample={handleShowExample}
+                        />
+                        
+                        <div className="p-8 pt-6">
+                            <TokenCountDisplay
+                                tokenCount={tokenCount}
+                                characterCount={text.length}
+                                isLoading={false}
+                                isKeyValid={true}
+                            />
+                        </div>
+                    </div>
 
-                <TokenCountDisplay
-                    tokenCount={tokenCount}
-                    characterCount={text.length}
-                    isLoading={false}
-                    isKeyValid={true}
-                />
-
-                <TokenizationInfo />
+                    <div className={`backdrop-blur-sm bg-opacity-50 ${theme === 'dark' ? 'bg-gray-900' : 'bg-white'} rounded-2xl border ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'} shadow-2xl p-8`}>
+                        <TokenizationInfo />
+                    </div>
+                </div>
             </div>
+            
             <PageFooter />
         </div>
     );
