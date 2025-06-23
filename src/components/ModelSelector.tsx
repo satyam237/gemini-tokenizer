@@ -24,19 +24,19 @@ export const ModelSelector = ({ selectedModel, onModelChange }: ModelSelectorPro
   const selectedModelInfo = GEMINI_MODELS.find(model => model.value === selectedModel);
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <div className={`p-2 rounded-lg ${theme === 'dark' ? 'bg-gradient-to-br from-green-600 to-emerald-600' : 'bg-gradient-to-br from-green-500 to-emerald-500'} shadow-md`}>
-          <Bot className="h-5 w-5 text-white" />
+    <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 flex-shrink-0">
+        <div className={`p-1.5 rounded-lg ${theme === 'dark' ? 'bg-gradient-to-br from-green-600 to-emerald-600' : 'bg-gradient-to-br from-green-500 to-emerald-500'} shadow-md`}>
+          <Bot className="h-4 w-4 text-white" />
         </div>
-        <label className={`text-xl font-semibold ${theme === 'dark' ? 'text-gray-200' : 'text-gray-800'}`}>
-          Select Gemini Model
+        <label className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-200' : 'text-gray-800'}`}>
+          Model:
         </label>
       </div>
       
-      <div className="flex flex-col gap-2">
+      <div className="flex-1 min-w-0">
         <Select value={selectedModel} onValueChange={onModelChange}>
-          <SelectTrigger className={`w-full text-lg p-4 h-auto transition-all duration-200 hover:scale-[1.02] ${theme === 'dark' ? 'bg-gray-800/50 border-gray-600 text-white hover:border-gray-500' : 'bg-white/80 border-gray-300 hover:border-gray-400'} shadow-md hover:shadow-lg`}>
+          <SelectTrigger className={`w-full text-sm h-9 transition-all duration-200 ${theme === 'dark' ? 'bg-gray-800/50 border-gray-600 text-white hover:border-gray-500' : 'bg-white/80 border-gray-300 hover:border-gray-400'} shadow-sm hover:shadow-md`}>
             <SelectValue placeholder="Choose a model..." />
           </SelectTrigger>
           <SelectContent className={`${theme === 'dark' ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'} shadow-xl`}>
@@ -44,11 +44,11 @@ export const ModelSelector = ({ selectedModel, onModelChange }: ModelSelectorPro
               <SelectItem 
                 key={model.value} 
                 value={model.value}
-                className={`text-lg py-3 px-4 cursor-pointer transition-all duration-200 ${theme === 'dark' ? 'text-white hover:bg-gray-700 focus:bg-gray-700' : 'text-gray-900 hover:bg-gray-100 focus:bg-gray-100'}`}
+                className={`text-sm py-2 px-3 cursor-pointer transition-all duration-200 ${theme === 'dark' ? 'text-white hover:bg-gray-700 focus:bg-gray-700' : 'text-gray-900 hover:bg-gray-100 focus:bg-gray-100'}`}
               >
                 <div className="flex flex-col">
                   <span className="font-medium">{model.label}</span>
-                  <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                  <span className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                     {model.description}
                   </span>
                 </div>
@@ -56,12 +56,6 @@ export const ModelSelector = ({ selectedModel, onModelChange }: ModelSelectorPro
             ))}
           </SelectContent>
         </Select>
-        
-        {selectedModelInfo && (
-          <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} ml-1`}>
-            Using <span className="font-medium">{selectedModelInfo.label}</span> - {selectedModelInfo.description}
-          </p>
-        )}
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useTheme } from "@/components/ThemeProvider";
 import { TokenizerInput } from "@/components/TokenizerInput";
 import { TokenCountDisplay } from "@/components/TokenCountDisplay";
@@ -10,7 +10,6 @@ import { PageFooter } from "@/components/PageFooter";
 import { ModelSelector } from "@/components/ModelSelector";
 import { useTokenCalculation } from "@/hooks/useTokenCalculation";
 import { Helmet } from 'react-helmet';
-import { estimateTokens } from "@/utils/tokenCalculation";
 
 const Index: React.FC = () => {
     const { theme } = useTheme();
@@ -19,19 +18,11 @@ const Index: React.FC = () => {
     const {
         text,
         tokenCount,
+        isLoading,
         handleTextChange,
         handleClear,
         handleShowExample
     } = useTokenCalculation(selectedModel);
-
-    const [estimatedTokenCount, setEstimatedTokenCount] = useState(0);
-
-    // Always provide estimated counts as fallback
-    useEffect(() => {
-        if (text) {
-            setEstimatedTokenCount(estimateTokens(text));
-        }
-    }, [text]);
 
     // Structured data for SEO
     const structuredData = {
@@ -77,14 +68,14 @@ const Index: React.FC = () => {
                     <div className={`absolute -bottom-40 -left-40 w-80 h-80 rounded-full opacity-20 ${theme === 'dark' ? 'bg-purple-500' : 'bg-purple-200'} blur-3xl`}></div>
                 </div>
                 
-                <div className="relative z-10 max-w-5xl mx-auto px-6 py-12 space-y-12">
+                <div className="relative z-10 max-w-4xl mx-auto px-4 py-8 space-y-8">
                     <PageHeader />
                     
-                    <div className={`backdrop-blur-sm bg-opacity-50 ${theme === 'dark' ? 'bg-gray-900' : 'bg-white'} rounded-2xl border ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'} shadow-2xl p-8`}>
+                    <div className={`backdrop-blur-sm bg-opacity-50 ${theme === 'dark' ? 'bg-gray-900' : 'bg-white'} rounded-2xl border ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'} shadow-2xl p-6`}>
                         <Introduction />
                     </div>
 
-                    <div className={`backdrop-blur-sm bg-opacity-50 ${theme === 'dark' ? 'bg-gray-900' : 'bg-white'} rounded-2xl border ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'} shadow-2xl p-8`}>
+                    <div className={`backdrop-blur-sm bg-opacity-50 ${theme === 'dark' ? 'bg-gray-900' : 'bg-white'} rounded-2xl border ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'} shadow-2xl p-4`}>
                         <ModelSelector 
                             selectedModel={selectedModel}
                             onModelChange={setSelectedModel}
@@ -99,17 +90,17 @@ const Index: React.FC = () => {
                             onShowExample={handleShowExample}
                         />
                         
-                        <div className="p-8 pt-6">
+                        <div className="p-6 pt-4">
                             <TokenCountDisplay
                                 tokenCount={tokenCount}
                                 characterCount={text.length}
-                                isLoading={false}
+                                isLoading={isLoading}
                                 isKeyValid={true}
                             />
                         </div>
                     </div>
 
-                    <div className={`backdrop-blur-sm bg-opacity-50 ${theme === 'dark' ? 'bg-gray-900' : 'bg-white'} rounded-2xl border ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'} shadow-2xl p-8`}>
+                    <div className={`backdrop-blur-sm bg-opacity-50 ${theme === 'dark' ? 'bg-gray-900' : 'bg-white'} rounded-2xl border ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'} shadow-2xl p-6`}>
                         <TokenizationInfo />
                     </div>
                 </div>

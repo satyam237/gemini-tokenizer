@@ -1,65 +1,100 @@
-import { useState, useEffect, useCallback } from 'react';
+
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { calculateTokensWithDefaultKey, estimateTokens } from "@/utils/tokenCalculation";
 
 export function useTokenCalculation(selectedModel: string) {
     const [text, setText] = useState<string>('');
     const [tokenCount, setTokenCount] = useState<number>(0);
-    const [debounceTimer, setDebounceTimer] = useState<NodeJS.Timeout | null>(null);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const debounceRef = useRef<NodeJS.Timeout | null>(null);
+    const abortControllerRef = useRef<AbortController | null>(null);
 
-    // Use memoized calculation function to prevent unnecessary renders
+    // Instant token calculation with very short debounce
     const handleTokenCalculation = useCallback(async (textToCount: string): Promise<void> => {
         if (!textToCount) {
             setTokenCount(0);
+            setIsLoading(false);
             return;
         }
 
+        // Cancel previous request
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+        }
+        
+        abortControllerRef.current = new AbortController();
+        setIsLoading(true);
+
         try {
             // Security: Validate input before sending to API
-            const trimmedText = textToCount.trim(); // Trim leading/trailing whitespace
-            const sanitizedText = trimmedText.slice(0, 100000); // Reasonable limit
+            const trimmedText = textToCount.trim();
+            const sanitizedText = trimmedText.slice(0, 100000);
+            
+            console.log('Calculating tokens for model:', selectedModel, 'text length:', sanitizedText.length);
             
             const count = await calculateTokensWithDefaultKey(sanitizedText, selectedModel);
+            
+            // Check if request was aborted
+            if (abortControllerRef.current?.signal.aborted) {
+                return;
+            }
             
             const numericCount = typeof count === 'string' ? parseInt(count, 10) : count;
             const finalCount = isNaN(numericCount) ? 0 : numericCount;
             
             setTokenCount(finalCount);
+            console.log('Token count result:', finalCount);
             
         } catch (error: any) {
+            // Check if error is due to abort
+            if (error.name === 'AbortError' || abortControllerRef.current?.signal.aborted) {
+                return;
+            }
+            
             console.error('Error counting tokens with API:', error);
             
-            // Only use fallback estimation as last resort
+            // Fallback to estimation
             const estimate = estimateTokens(textToCount);
             setTokenCount(estimate);
+            console.log('Using estimated token count:', estimate);
+        } finally {
+            setIsLoading(false);
         }
     }, [selectedModel]);
 
-    // Instant token calculation with very short debounce for performance
+    // Instant token calculation with minimal debounce (20ms for near-instant feel)
     useEffect(() => {
         if (!text) {
             setTokenCount(0);
+            setIsLoading(false);
             return;
         }
         
-        // Clear any existing timer
-        if (debounceTimer) clearTimeout(debounceTimer);
+        // Clear existing debounce
+        if (debounceRef.current) {
+            clearTimeout(debounceRef.current);
+        }
         
-        // Very short debounce for API calls (50ms for instant feel)
-        const timer = setTimeout(() => {
-            handleTokenCalculation(text).catch((error) => {
-                console.error('Token calculation failed:', error);
-                // Silent fallback to estimation
-                const estimate = estimateTokens(text);
-                setTokenCount(estimate);
-            });
-        }, 50);
-        
-        setDebounceTimer(timer);
+        // Very short debounce for instant feel while preventing excessive API calls
+        debounceRef.current = setTimeout(() => {
+            handleTokenCalculation(text);
+        }, 20);
         
         return () => {
-            if (timer) clearTimeout(timer);
+            if (debounceRef.current) {
+                clearTimeout(debounceRef.current);
+            }
         };
     }, [text, selectedModel, handleTokenCalculation]);
+
+    // Cleanup on unmount
+    useEffect(() => {
+        return () => {
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort();
+            }
+        };
+    }, []);
 
     const handleTextChange = (newText: string): void => {
         setText(newText);
@@ -68,6 +103,7 @@ export function useTokenCalculation(selectedModel: string) {
     const handleClear = (): void => {
         setText('');
         setTokenCount(0);
+        setIsLoading(false);
     };
 
     const handleShowExample = (): void => {
@@ -78,6 +114,7 @@ export function useTokenCalculation(selectedModel: string) {
     return {
         text,
         tokenCount,
+        isLoading,
         handleTextChange,
         handleClear,
         handleShowExample,
