@@ -22,17 +22,15 @@ export const ModelSelector = ({ selectedModel, onModelChange }: ModelSelectorPro
   const { theme } = useTheme();
 
   return (
-    <div className="flex items-center gap-3">
-      <div className="flex items-center gap-2 flex-shrink-0">
-        <div className={`p-1.5 rounded-lg ${theme === 'dark' ? 'bg-gradient-to-br from-green-600 to-emerald-600' : 'bg-gradient-to-br from-green-500 to-emerald-500'} shadow-md`}>
-          <Bot className="h-4 w-4 text-white" />
+    <div className={`relative p-4 rounded-lg border transition-all duration-300 hover:shadow-md ${theme === 'dark' ? 'bg-gradient-to-br from-green-900/20 to-green-800/10 border-green-700/30 hover:border-green-600/50' : 'bg-gradient-to-br from-green-50 to-green-100/50 border-green-200 hover:border-green-300'}`}>
+      <div className="flex items-center justify-between mb-2">
+        <div className={`flex items-center gap-2 text-xs font-medium ${theme === 'dark' ? 'text-green-300' : 'text-green-700'}`}>
+          <Bot className="h-3 w-3" />
+          Model
         </div>
-        <label className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-200' : 'text-gray-800'}`}>
-          Model:
-        </label>
       </div>
       
-      <div className="flex-1 min-w-0 max-w-xs">
+      <div className="w-full">
         <Select value={selectedModel} onValueChange={onModelChange}>
           <SelectTrigger className={`w-full text-sm h-8 transition-all duration-200 ${theme === 'dark' ? 'bg-gray-800/50 border-gray-600 text-white hover:border-gray-500' : 'bg-white/80 border-gray-300 hover:border-gray-400'} shadow-sm hover:shadow-md`}>
             <SelectValue placeholder="Choose a model..." />

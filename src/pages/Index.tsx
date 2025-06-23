@@ -74,22 +74,18 @@ const Index: React.FC = () => {
                         <Introduction />
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                        <div className={`backdrop-blur-sm bg-opacity-50 ${theme === 'dark' ? 'bg-gray-900' : 'bg-white'} rounded-2xl border ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'} shadow-2xl p-4`}>
-                            <ModelSelector 
-                                selectedModel={selectedModel}
-                                onModelChange={setSelectedModel}
-                            />
-                        </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <ModelSelector 
+                            selectedModel={selectedModel}
+                            onModelChange={setSelectedModel}
+                        />
 
-                        <div className="lg:col-span-2">
-                            <TokenCountDisplay
-                                tokenCount={tokenCount}
-                                characterCount={text.length}
-                                isLoading={isLoading}
-                                isKeyValid={true}
-                            />
-                        </div>
+                        <TokenCountDisplay
+                            tokenCount={tokenCount}
+                            characterCount={text.length}
+                            isLoading={isLoading}
+                            isKeyValid={true}
+                        />
                     </div>
 
                     <div className={`backdrop-blur-sm bg-opacity-50 ${theme === 'dark' ? 'bg-gray-900' : 'bg-white'} rounded-2xl border ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'} shadow-2xl overflow-hidden`}>
