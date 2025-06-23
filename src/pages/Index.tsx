@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useTheme } from "@/components/ThemeProvider";
 import { TokenizerInput } from "@/components/TokenizerInput";
@@ -68,18 +67,29 @@ const Index: React.FC = () => {
                     <div className={`absolute -bottom-40 -left-40 w-80 h-80 rounded-full opacity-20 ${theme === 'dark' ? 'bg-purple-500' : 'bg-purple-200'} blur-3xl`}></div>
                 </div>
                 
-                <div className="relative z-10 max-w-4xl mx-auto px-4 py-8 space-y-8">
+                <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 space-y-6">
                     <PageHeader />
                     
                     <div className={`backdrop-blur-sm bg-opacity-50 ${theme === 'dark' ? 'bg-gray-900' : 'bg-white'} rounded-2xl border ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'} shadow-2xl p-6`}>
                         <Introduction />
                     </div>
 
-                    <div className={`backdrop-blur-sm bg-opacity-50 ${theme === 'dark' ? 'bg-gray-900' : 'bg-white'} rounded-2xl border ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'} shadow-2xl p-4`}>
-                        <ModelSelector 
-                            selectedModel={selectedModel}
-                            onModelChange={setSelectedModel}
-                        />
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                        <div className={`backdrop-blur-sm bg-opacity-50 ${theme === 'dark' ? 'bg-gray-900' : 'bg-white'} rounded-2xl border ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'} shadow-2xl p-4`}>
+                            <ModelSelector 
+                                selectedModel={selectedModel}
+                                onModelChange={setSelectedModel}
+                            />
+                        </div>
+
+                        <div className="lg:col-span-2">
+                            <TokenCountDisplay
+                                tokenCount={tokenCount}
+                                characterCount={text.length}
+                                isLoading={isLoading}
+                                isKeyValid={true}
+                            />
+                        </div>
                     </div>
 
                     <div className={`backdrop-blur-sm bg-opacity-50 ${theme === 'dark' ? 'bg-gray-900' : 'bg-white'} rounded-2xl border ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'} shadow-2xl overflow-hidden`}>
@@ -89,15 +99,6 @@ const Index: React.FC = () => {
                             onClear={handleClear}
                             onShowExample={handleShowExample}
                         />
-                        
-                        <div className="p-6 pt-4">
-                            <TokenCountDisplay
-                                tokenCount={tokenCount}
-                                characterCount={text.length}
-                                isLoading={isLoading}
-                                isKeyValid={true}
-                            />
-                        </div>
                     </div>
 
                     <div className={`backdrop-blur-sm bg-opacity-50 ${theme === 'dark' ? 'bg-gray-900' : 'bg-white'} rounded-2xl border ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'} shadow-2xl p-6`}>
